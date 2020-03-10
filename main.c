@@ -72,6 +72,9 @@ int main() {
 
                     }
 
+                    int Matrix[spalten][zeilen];
+                    int laufvariablespalte = 1;
+                    int laufvariablezeile = 1;
                     while((c=fgetc(fp)) != EOF) {
                         temp = c;
                         if (c == '\n'|| c == ','||c=='\r') {
