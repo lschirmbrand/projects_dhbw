@@ -32,7 +32,7 @@ int main() {
                 printf("Die Datei konnte geöffnet werden.\n\n\n");
                 unsigned int eintraege = 0;
                 char c = 0;
-                int number = 0;
+                double number = 0;
                 char temp = 0;
                 char numberstring[13];
                 numberstring[0] = '\0';
@@ -73,24 +73,42 @@ int main() {
                     }
 
                     int Matrix[spalten][zeilen];
-                    int laufvariablespalte = 1;
-                    int laufvariablezeile = 1;
+                    int laufvariablespalte = 0;
+                    int laufvariablezeile = 0;
+
+                    fseek(fp, 0, SEEK_SET); //Dateizeiger auf Anfang setzen
                     while((c=fgetc(fp)) != EOF) {
                         temp = c;
-                        if (c == '\n'|| c == ','||c=='\r') {
+                        if (c == '\n'||c=='\r') {
                             temp = '\0';
-                            printf("%s\n", numberstring);
+                            strncat(numberstring, &temp, 1);
                             number = atof(numberstring);
+                            printf("%lf\n", number);
+                            Matrix[laufvariablezeile][laufvariablespalte] = number;
+                            laufvariablezeile++;
+                            laufvariablespalte = 0;
                             numberstring[0] = '\0';
 
-                        } //eventuell noch mit temp Variable den Vorgängerchar
+                        }
 
-                        if (c!='\n' || c != ',' || c != '\r'){
+                        if (c == ',') {
+                            temp = '\0';
+                            strncat(numberstring, &temp, 1);
+                            number = atof(numberstring);
+                            printf("%lf\n", number);
+                            Matrix[laufvariablezeile][laufvariablespalte] = number;
+                            laufvariablespalte++;
+                            numberstring[0] = '\0';
+
+                        }
+
+                        if (c!='\n' && c != ',' && c != '\r'){
                             strncat(numberstring, &temp, 1);
                         }
 
                       }
 
+                    printf("\n\n%lf\n", Matrix[1][2]);
             }
 
 
