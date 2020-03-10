@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1583842828 source:/home/lschirmbrand/Documents/CProjekte/cproject_dhbw/main.c
+	<stdio.h>
+	<stdbool.h>
+	<stdlib.h>
+	<string.h>
+
