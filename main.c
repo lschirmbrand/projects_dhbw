@@ -22,7 +22,7 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konv4.csv", "r");
+        fp = fopen("konv500.csv", "r");
 
 
         if (fp == NULL)
@@ -30,41 +30,41 @@ int main() {
         if (fp!=NULL)
             {
                 printf("Die Datei konnte geöffnet werden.\n\n\n");
-                unsigned int eintraege = 0;
-                char c = 0;
-                double number = 0;
-                char temp = 0;
-                char numberstring[13];
-                numberstring[0] = '\0';
-                //numberstring = (char *) malloc(size * sizeof(char));
-                fseek(fp, 0, SEEK_SET); //Dateizeiger auf Anfang setzen
+                unsigned int eintraege = 0;             //Nutzung der insgesamten Einträge, um Zeilen/Spalten auszurechnen
+                char c = 0;                             //Einführung der "Zeiger"-Variable, wird zur Abfrage verwendet, was an Stelle x steht
+                double number = 0;                      //Einführung number, hat Wert der einzelnen Zellen der Matrix
+                char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
+                char numberstring[13];                  //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
+                numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
+                //numberstring = (char *) malloc(size * sizeof(char)); //Dynamische Speicherbereitstellung für Matrix
+                fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
 
-                  while((c=fgetc(fp)) != EOF) {
-                    temp = c;
-                    if (c == '\n'|| c == ','||c=='\r') {
+                  while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
+                    temp = c;                               //temp = momentanes Zeichen
+                    if (c == '\n'|| c == ','||c=='\r') {    //if c = Zeilenumbruch oder Komma
                         eintraege++;
 
-                    } //eventuell noch mit temp Variable den Vorgängerchar
+                    }
 
                   }
-                    //printf("%d\n", (int)numberstring-'0');
+
                     printf("%s", numberstring);
                     printf("Eintraege:\t%d\n", eintraege);
 
-                    int zeilen = 0; //Initialisierung der Variable für Zeilen
-                    int spalten = 0; //Initialisierung der Variable für spalten
+                    int zeilen = 0;                     //Initialisierung der Variable für Zeilen
+                    int spalten = 0;                    //Initialisierung der Variable für spalten
 
-                    if (eintraege > 0){ //wenn mindestens 1 Eintrag in der Datei ist
-                        for (int i = 0; i<1000; i++) //Schleife für maximal 1.001.000 Einträge
+                    if (eintraege > 0){                 //wenn mindestens 1 Eintrag in der Datei ist
+                        for (int i = 0; i<1000; i++)    //Schleife für maximal 1.001.000 Einträge
                         {
-                            if(eintraege == zeilen*(zeilen+1)) //wenn spalten * zeilen = einträge, spalten ist richtig und wird gespiechert, genau wie Zeilen
+                            if(eintraege == zeilen*(zeilen+1))  //wenn spalten * zeilen = einträge, spalten ist richtig und wird gespiechert, genau wie Zeilen
                             {
-                                spalten= zeilen + 1; //Spalten = Matrix + Vektor
+                                spalten= zeilen + 1;            //Spalten = Matrix + Vektor
                                 break;
                             }
                             else
                             {
-                                zeilen++; //Zeilen werden immer erhöht, bis Schleifenende erreicht oder Einträge = Zeilen * Spalten bzw Zeilen * (Zeilen+1)
+                                zeilen++;               //Zeilen werden immer erhöht, bis Schleifenende erreicht oder Einträge = Zeilen * Spalten bzw Zeilen * (Zeilen+1)
                             }
                         }
 
@@ -72,43 +72,55 @@ int main() {
 
                     }
 
-                    int Matrix[spalten][zeilen];
-                    int laufvariablespalte = 0;
-                    int laufvariablezeile = 0;
+                    double Matrix[spalten][zeilen];
+                    int is = 0;                     //Variable, die Spalte in Matrix beschreibt
+                    int iz = 0;                     //Variable die Zeile in Matrix beschreibt
 
-                    fseek(fp, 0, SEEK_SET); //Dateizeiger auf Anfang setzen
-                    while((c=fgetc(fp)) != EOF) {
+                    fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
+                    while((c=fgetc(fp)) != EOF) {                   //Schleife, s.o
                         temp = c;
                         if (c == '\n'||c=='\r') {
                             temp = '\0';
-                            strncat(numberstring, &temp, 1);
-                            number = atof(numberstring);
-                            printf("%lf\n", number);
-                            Matrix[laufvariablezeile][laufvariablespalte] = number;
-                            laufvariablezeile++;
-                            laufvariablespalte = 0;
-                            numberstring[0] = '\0';
+                            strncat(numberstring, &temp, 1);        //CharArray wird verkettet
+                            number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
+                            //printf("%lf\n", number);
+                            Matrix[iz][is] = number;
+                            iz++;                                   //Sprung in nächste Zeile
+                            is = 0;                                 //Spalte wird wieder auf 0 gesetzt
+                            numberstring[0] = '\0';                 //CharArray wird gecleared
 
                         }
 
                         if (c == ',') {
                             temp = '\0';
-                            strncat(numberstring, &temp, 1);
-                            number = atof(numberstring);
-                            printf("%lf\n", number);
-                            Matrix[laufvariablezeile][laufvariablespalte] = number;
-                            laufvariablespalte++;
-                            numberstring[0] = '\0';
+                            strncat(numberstring, &temp, 1);        //CharArray wird verkettet
+                            number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
+                            //printf("%lf\n", number);
+                            Matrix[iz][is] = number;
+                            is++;                                   //Spalte wird um eins erhöht, also nach rechts geschoben
+                            numberstring[0] = '\0';                 //CharArray wird gecleared
 
                         }
 
-                        if (c!='\n' && c != ',' && c != '\r'){
-                            strncat(numberstring, &temp, 1);
+                        if (c!='\n' && c != ',' && c != '\r'){      //Wenn kein Zeilenumbruch oder Komma gelesen wird -> Zahl wird als Char eingelesen
+                            strncat(numberstring, &temp, 1);        //Verkettung zu CharArray/String
                         }
 
                       }
 
-                    printf("\n\n%lf\n", Matrix[1][2]);
+                    printf("\n%lf", Matrix[0][0]);
+                    printf("\n%lf", Matrix[0][1]);
+                    printf("\n%lf", Matrix[0][2]);
+                    printf("\n%lf", Matrix[0][3]);
+                    printf("\n%lf", Matrix[1][0]);
+                    printf("\n%lf", Matrix[1][1]);
+                    printf("\n%lf", Matrix[1][2]);
+                    printf("\n%lf", Matrix[1][3]);
+                    printf("\n%lf", Matrix[2][0]);
+                    printf("\n%lf", Matrix[2][1]);
+                    printf("\n%lf", Matrix[2][2]);
+                    printf("\n%lf", Matrix[2][3]);
+
             }
 
 
@@ -118,7 +130,6 @@ int main() {
 }
 
 bool load (const char *konv3, Matrix *A, Vector *b, Vector *x){
-
 
 
 return true;
