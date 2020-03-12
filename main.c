@@ -84,7 +84,7 @@ int main() {
                     double Matrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
-                    //bool null = false;
+                    bool move = false;
 
                     fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
                     while((c=fgetc(fp)) != EOF) {                   //Schleife, s.o
@@ -134,7 +134,6 @@ int main() {
                                 }
                                 else{
                                     printf("%d, %d\n",z,i );
-                                    //null = true;
                                     printf("Spalte max: %d\n", spalten-1);
                                     if (i==spalten-1 && Matrix[z][i] == 0)
                                     {
@@ -145,8 +144,15 @@ int main() {
                                             {
                                                 printf("%d=zv\n", zv);
                                                 Matrix[zv][sv]=Matrix[zv+1][sv];
+                                                move = true;
                                             }
                                         }
+                                        for(int nz = 0; nz<spalten;nz++)
+                                    {
+                                        printf("Zeilen: %d\nSpalten: %d\n%d = nz\n", zeilen, spalten, nz);
+                                        Matrix[zeilen-1][nz] = 0;
+                                    }
+
                                     }
 
                                 }
@@ -154,18 +160,19 @@ int main() {
 
                         }
 
-                        printf("%lf ",Matrix[0][0]);
-                        printf("%lf ",Matrix[0][1]);
-                        printf("%lf ",Matrix[0][2]);
-                        printf("%lf\n",Matrix[0][3]);
-                        printf("%lf ",Matrix[1][0]);
-                        printf("%lf ",Matrix[1][1]);
-                        printf("%lf ",Matrix[1][2]);
-                        printf("%lf\n",Matrix[1][3]);
-                        printf("%lf ",Matrix[2][0]);
-                        printf("%lf ",Matrix[2][1]);
-                        printf("%lf ",Matrix[2][2]);
-                        printf("%lf\n",Matrix[2][3]);
+                        for(int r = 0; r<zeilen-1; r++)
+                        {
+                            for(int z = 0; z<spalten-1; z++)
+                            {
+                                if(r!=spalten){
+                                printf("%lf ",Matrix[r][z]);
+                                }
+                                if(r==spalten){
+                                printf("%lf\n",Matrix[r][z]);
+                                }
+
+                            }
+                        }
 
 
 
