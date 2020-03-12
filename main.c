@@ -25,7 +25,6 @@ typedef enum
     JACOBI = 0, GAUSS_SEIDEL = 1
 } Method;
 
-//#define BETWEEN(x, a,b) (x >= a && x <= b)
 
 int main() {
         FILE *fp;
@@ -81,7 +80,7 @@ int main() {
 
 
 
-                    double Matrix[zeilen][spalten];
+                    double GMatrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
                     int ncounter = 0;               //Variable zur Protokollierung der insgesamten Nullzeilen
@@ -93,7 +92,7 @@ int main() {
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
                             number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
-                            Matrix[iz][is] = number;
+                            GMatrix[iz][is] = number;
 
                             iz++;                                   //Sprung in nächste Zeile
                             is = 0;                                 //Spalte wird wieder auf 0 gesetzt
@@ -105,7 +104,7 @@ int main() {
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
                             number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
-                            Matrix[iz][is] = number;
+                            GMatrix[iz][is] = number;
                             is++;                                   //Spalte wird um eins erhöht, also nach rechts geschoben
                             numberstring[0] = '\0';                 //CharArray wird gecleared
 
@@ -120,30 +119,30 @@ int main() {
 
                       /*For Schleife die komplettes Array durchläuft, 0-Zeilen löscht
                         bzw die Zeilen darunter verschiebt um die Lücke zu füllen*/
-                        int x = 0;
+
 
                         for (int z = 0; z<zeilen; z++)              //Durchlaufen aller Zeilen
                         {
                             for (int i = 0; i<spalten; i++)         //Durchlaufen aller Spalten
                             {
-                                if(Matrix[z][i]!=0)                 //Wenn Eintrag in Zelle !=0
+                                if(GMatrix[z][i]!=0)                 //Wenn Eintrag in Zelle !=0
                                 {
                                     break;                          //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
                                 }
                                 else{
-                                        if (i==spalten-1 && Matrix[z][i] == 0)      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
+                                        if (i==spalten-1 && GMatrix[z][i] == 0)      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
                                         {
                                             ncounter++;                             //Protokolierung der Nullzeilen
                                             for(int zv=z; zv<zeilen-1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
                                             {
                                                 for(int sv = 0; sv<spalten;sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
                                                 {
-                                                    Matrix[zv][sv]=Matrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
+                                                    GMatrix[zv][sv]=GMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
                                                 }
                                             }
                                             for(int nz = 0; nz<spalten;nz++)
                                             {
-                                                Matrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
+                                                GMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
                                             }
 
                                         }
@@ -171,7 +170,39 @@ int main() {
                         */
 
 
-                printf("Nullzeilen: %d", ncounter);
+
+                printf("Nullzeilen: %d\n", ncounter);
+                double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
+                double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
+                for(int vz = 0; vz<zeilen; vz++)
+                {
+                    Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
+                }
+
+                for(int mz=0; mz<zeilen; mz++)
+                {
+                    for(int ms=0; ms<spalten-1; ms++)
+                    {
+                        Matrix[mz][ms]=GMatrix[mz][ms];     //Quadratische Matrix = Gmatrix -Vektor
+                    }
+                }
+
+                /*
+
+                Abfrage der Werte der neuen Matrix und des Vektors zur Kontrolle:
+
+                for(int r = 0; r<zeilen; r++)
+                {
+                    printf("%lf\n",Vector[r]);
+                }
+
+                for (int t = 0; t<zeilen; t++)
+                {
+                    for(int x = 0; x<spalten-1; x++)
+                    {
+                        printf("%lf\n",Matrix[t][x]);
+                    }
+                }*/
             }
 
 
