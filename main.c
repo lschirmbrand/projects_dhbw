@@ -29,7 +29,7 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konvnulltest.csv", "r");
+        fp = fopen("konv500.csv", "r");
 
 
         if (fp == NULL)
@@ -84,12 +84,12 @@ int main() {
                     double Matrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
-                    bool move = false;
+                    int ncounter = 0;               //Variable zur Protokollierung der insgesamten Nullzeilen
 
                     fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
                     while((c=fgetc(fp)) != EOF) {                   //Schleife, s.o
                         temp = c;
-                        if (c == '\n'){//}||c=='\r') {                   //falls Zeilenumsprung gelesen wird
+                        if (c == '\n'||c=='\r') {                   //falls Zeilenumsprung gelesen wird
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
                             number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
@@ -122,43 +122,38 @@ int main() {
                         bzw die Zeilen darunter verschiebt um die Lücke zu füllen*/
                         int x = 0;
 
-                        for (int z = 0; z<zeilen; z++)
+                        for (int z = 0; z<zeilen; z++)              //Durchlaufen aller Zeilen
                         {
-                            for (int i = 0; i<spalten; i++)
+                            for (int i = 0; i<spalten; i++)         //Durchlaufen aller Spalten
                             {
-                                if(Matrix[z][i]!=0)
+                                if(Matrix[z][i]!=0)                 //Wenn Eintrag in Zelle !=0
                                 {
-                                    //printf("%d\n", x);
-                                    //x++;
-                                    break;
+                                    break;                          //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
                                 }
                                 else{
-                                    printf("%d, %d\n",z,i );
-                                    printf("Spalte max: %d\n", spalten-1);
-                                    if (i==spalten-1 && Matrix[z][i] == 0)
-                                    {
-                                        printf("Nullzeile bei Zeile: %d\n", z+1);
-                                        for(int zv=z; zv<zeilen-1; zv++)
+                                        if (i==spalten-1 && Matrix[z][i] == 0)      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
                                         {
-                                            for(int sv = 0; sv<spalten;sv++)
+                                            ncounter++;                             //Protokolierung der Nullzeilen
+                                            for(int zv=z; zv<zeilen-1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
                                             {
-                                                printf("%d=zv\n", zv);
-                                                Matrix[zv][sv]=Matrix[zv+1][sv];
-                                                move = true;
+                                                for(int sv = 0; sv<spalten;sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
+                                                {
+                                                    Matrix[zv][sv]=Matrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
+                                                }
                                             }
+                                            for(int nz = 0; nz<spalten;nz++)
+                                            {
+                                                Matrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
+                                            }
+
                                         }
-                                        for(int nz = 0; nz<spalten;nz++)
-                                    {
-                                        printf("Zeilen: %d\nSpalten: %d\n%d = nz\n", zeilen, spalten, nz);
-                                        Matrix[zeilen-1][nz] = 0;
-                                    }
 
                                     }
-
-                                }
                             }
 
                         }
+
+                        /*Überprüfung der Matrix
 
                         for(int r = 0; r<zeilen-1; r++)
                         {
@@ -173,9 +168,10 @@ int main() {
 
                             }
                         }
+                        */
 
 
-
+                printf("Nullzeilen: %d", ncounter);
             }
 
 
