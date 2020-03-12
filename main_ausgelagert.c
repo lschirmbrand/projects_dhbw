@@ -42,8 +42,106 @@ typedef enum
 
 
 int main() {
+        char filename[1000];                                        //Speicherplatz für Namen der Datei, die geöffnet werden soll. Maximale Länge des Dateinamens: 999
+        filename[0]= '\0';                                          //Filename wird leer deklariert.
+        bool gueltig = false;                                       //Allgemein genutzte Variable zur Bestimmung von Bedingungen und Abbruch von Schleifen.
+        bool out;                                                   //Bool zur Bestimmung der Darstellung des Ergebnis, auch zur Fehlerbestimmung
+        double fehlerschranke = 0.0000000001;                       //Standard-Fehlerschranke (1-e10)
+        char J[]="J"; char j[]="j"; char N[]="N"; char n[]="n";     //Initialsierung von Chars, die zur Bedingungsabfrage genutz werden (Ja&Nein-Antworten)
+        char fehlerschrankechar[50];                                //Fehlerschrankechar ist eine Variable, in der die Antwort gespeichert wird und mit der Bedingung verglichen wird
+        fehlerschrankechar[0] = '\0';                               //CharArray wird leer deklariert
+        char output[50];                                            //Output ist eine Variable, in der die Antwort gespeichert wird und mit der Bedingung verglichen wird
+        output[0] = '\0';                                           //CharArray wird leer deklariert
+        while(!gueltig)                                             //Schleife, solange nicht richtiges Antwortformat comitted wird
+        {
+        printf("Wie heißt die zu öffnende CSV-Datei?\nAchtung, die Eingabe muss mit der Dateiendung .csv versehen sein.\n\n-> " );
+        scanf("%s",&filename);                                                                                                          //Eingegebener Dateiname wird in filename abgespeichert
+            if(strchr(filename,'.csv'))                                                                                                 //Wenn im Dateinamen richtiges Dateiformat enthalten ist -> Verlassen der Schleife
+            {
+                gueltig=true;
+
+                if (true == true)//if(load(filename)==true)                                                                             //Wenn Methode load erfolgreich ist, die Datei öffnet und abspeichert
+                {
+                    printf("Die Datei wurde erfolgreich geladen und die Matrix und Vektoren initialisiert.\n");
+                }
+                /*else
+                {
+                    printf("Die Datei konnte nicht geöfnet werden! Existiert die Datei wirklich? Befindet sie sich im richtigen Dateipfad?");
+                    gueltig=false;
+                }*/
+            }
+        }
+
+        gueltig = false;
+        while(!gueltig)
+        {
+            printf("Die Standard Fehlerschranke in diesem Programm liegt bei:  %1.e,  soll eine eigene Fehlerschranke eingegeben werden?(J/N)\n-> ", fehlerschranke);           //Standardfehlerschranke oder eigene?
+            scanf("%s", &fehlerschrankechar );                                                                                                                                  //Antwort wird gespeichert
+
+            if(strcmp(fehlerschrankechar, J)==0 || strcmp(fehlerschrankechar, j) == 0)                                                                                          //if Antwort ja
+            {
+                printf("Bitte geben sie eine Fehlerschranke (in Dezimalschreibweise) ein: \n-> ");                                                                              //Aufforderung die Fehlerschranke einzugeben
+                scanf("%lf", fehlerschranke);                                                                                                                                   //Überschreiben der Fehlerschranke
+                gueltig = true;                                                                                                                                                 //Verlassen der Schleife
+            }
+            else if (strcmp(fehlerschrankechar, N)==0 || strcmp(fehlerschrankechar, n) == 0)                                                                                    //if Antwort nein
+            {
+                gueltig = true;                                                                                                                                                 //Verlassen der Schleife mit Standardfehlerschranke
+            }
+            else
+            {
+                printf("Bitte halten sie sich an die Vorgaben des Antwortens. Entweder die Eingabe 'J' für Ja, oder ’N’ für Nein.");                                            //falsche Eingabe
+                gueltig = false;                                                                                                                                                //Wiederholung der Schleife und somit der Abfrage
+            }
+        }
+        //solve(Matrix A, Vector b, Vector x, fehlerschranke);                                                                                                                                              //Aufruf der Metode solve
+        gueltig = false;
+        while(!gueltig)                                                                                                                                                                                     //Schleife bis Eingabe gueltig
+        {
+            if (Berechnung == erfolgreich)                                                                                                                                                                  //If Berechnung erfolgreich
+            {
+                printf("Die Berechnung war erfolgreich. Das Ergebnis kann komplett ausgegeben werden, standardmäßig aber nur der letzte Vektor.\nSoll das ganze Ergebnis ausgegeben werden? (J/N)");        //Ausgabe Ergebnis
+                scnaf("%s",&output);                                                                                                                                                                        //Output = Antwort
+
+                if(strcmp(output, J)==0 || strcmp(output, j) == 0)                                                                                      //Bedingung, falls Output "Ja" entspricht
+                {
+                    printf("Das ganze Ergebnis soll ausgegeben werden:\n\n");                                                                           //Ganzes Ergebnis soll ausgegeben werden
+                    out = true;                                                                                                                         //Siehe eine Zeile darüber
+                    gueltig = true;                                                                                                                     //Schleifenabbruch
+                }
+                else if (strcmp(output, N)==0 || strcmp(output, n) == 0)                                                                                //Bedingung, falls Output "Nein" entspricht
+                {
+                    printf("Nur der letzte Vektor soll als Ergbenis ausgegeben werden:\n\n");                                                           //Nur der letzte Vektor soll ausgegeben werden
+                    out = false;                                                                                                                        //Siehe Zeile darüber
+                    gueltig = true;                                                                                                                     //Schleifenabbruch
+                }
+                else
+                {
+                    printf("Bitte halten sie sich an die Vorgaben der Antworten. Entweder die Eingabe 'J' für Ja, oder ’N’ für Nein.");                 //Eingabe ungültig
+                    gueltig = false;                                                                                                                    //Schleife wird erneut ausgeführt
+                }
+            }
+        }
+
+        if(out == true)                                                                                                                                 //If ganzes Ergebnis gewollt
+        {
+
+        }
+        else if(out == false)                                                                                                                           //If nur der letzte Vektor gewollt
+        {
+
+        }
+        else{printf("Ein Fehler ist im Programm aufgetreten, die Darstellung des Ergebnis kann nicht geladen werden. Bitte starten sie das Programm neu!\n\n");}        //Ein Fehler ist aufgetreten, Programmabfolge beschädigt
+
+
+    return 0;
+
+}
+
+bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
+
         FILE *fp;
-        fp = fopen("konvnulltest.csv", "r");
+        fp = fopen(filename, "r");
 
 
         if (fp == NULL)
@@ -53,7 +151,7 @@ int main() {
                 printf("Die Datei konnte geöffnet werden.\n\n\n");
                 unsigned int eintraege = 0;             //Nutzung der insgesamten Einträge, um Zeilen/Spalten auszurechnen
                 char c = 0;                             //Einführung der "Zeiger"-Variable, wird zur Abfrage verwendet, was an Stelle x steht
-                double number = 0;                      //Einführung number, hat Wert der einzelnen Zellen der Matrix
+                long double number = 0;                      //Einführung number, hat Wert der einzelnen Zellen der Matrix
                 char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
                 char numberstring[13];                  //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
                 numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
@@ -101,7 +199,7 @@ int main() {
 
 
 
-                    double GMatrix[zeilen][spalten];
+                    long double GMatrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
                     int ncounter = 0;               //Variable zur Protokollierung der insgesamten Nullzeilen
@@ -193,8 +291,8 @@ int main() {
 
                 ncounter = (ncounter/2);
                 printf("Nullzeilen: %d\n", ncounter);
-                double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
-                double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
+                long double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
+                long double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
                 for(int vz = 0; vz<zeilen-ncounter+1; vz++)
                 {
                     Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
@@ -221,7 +319,7 @@ int main() {
                 {
                     for(int x = 0; x<spalten-1; x++)
                     {
-                        printf("%lf ",Matrix[t][x]);
+                        printf("%Lf ",Matrix[t][x]);
                         test++;
                         if(x==spalten-2){printf("\n");}
                     }
@@ -232,13 +330,9 @@ int main() {
 
         fclose(fp);
 
-    return 0;
-}
 
-bool load (const char *konv3, Matrix *A, Vector *b, Vector *x){
-
-
-return true;
+if(fp!=NULL) {return true;}
+else {return false;}
 
 }
 
