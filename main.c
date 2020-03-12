@@ -29,7 +29,7 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konvemptyline.csv", "r");
+        fp = fopen("konvnulltest.csv", "r");
 
 
         if (fp == NULL)
@@ -84,6 +84,7 @@ int main() {
                     double Matrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
+                    //bool null = false;
 
                     fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
                     while((c=fgetc(fp)) != EOF) {                   //Schleife, s.o
@@ -121,22 +122,50 @@ int main() {
                         bzw die Zeilen darunter verschiebt um die Lücke zu füllen*/
                         int x = 0;
 
-                        for (int i = 0; i<zeilen; i++)
+                        for (int z = 0; z<zeilen; z++)
                         {
-                            for (int z = 0; z<spalten; z++)
+                            for (int i = 0; i<spalten; i++)
                             {
-                                if(Matrix[i][z]!=0)
+                                if(Matrix[z][i]!=0)
                                 {
                                     //printf("%d\n", x);
                                     //x++;
                                     break;
                                 }
                                 else{
-                                printf("%d\n",z );
+                                    printf("%d, %d\n",z,i );
+                                    //null = true;
+                                    printf("Spalte max: %d\n", spalten-1);
+                                    if (i==spalten-1 && Matrix[z][i] == 0)
+                                    {
+                                        printf("Nullzeile bei Zeile: %d\n", z+1);
+                                        for(int zv=z; zv<zeilen-1; zv++)
+                                        {
+                                            for(int sv = 0; sv<spalten;sv++)
+                                            {
+                                                printf("%d=zv\n", zv);
+                                                Matrix[zv][sv]=Matrix[zv+1][sv];
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
 
                         }
+
+                        printf("%lf ",Matrix[0][0]);
+                        printf("%lf ",Matrix[0][1]);
+                        printf("%lf ",Matrix[0][2]);
+                        printf("%lf\n",Matrix[0][3]);
+                        printf("%lf ",Matrix[1][0]);
+                        printf("%lf ",Matrix[1][1]);
+                        printf("%lf ",Matrix[1][2]);
+                        printf("%lf\n",Matrix[1][3]);
+                        printf("%lf ",Matrix[2][0]);
+                        printf("%lf ",Matrix[2][1]);
+                        printf("%lf ",Matrix[2][2]);
+                        printf("%lf\n",Matrix[2][3]);
 
 
 
