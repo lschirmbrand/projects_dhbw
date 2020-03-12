@@ -1,8 +1,23 @@
-/*To dos:
--Plattformunabhängigkeit bewerkstelligen durch \n\r || \n || \r
--
--
--
+/*
+Programm öffnet die CSV-Datei, im Falle eines Fehlschlags wird ein NULL-Pointer zurück gegeben, in diesem Fall wird eine Fehlermeldung ausgegeben.
+Im Falle eines erfolgreichen Öffnens wird der Filestream aktiviert: Zuerst wird der Zeiger in der Datei auf den Anfang gesetzt, sodass er immer am Anfang ist.
+Danach wird ein char c genutzt, um Char für Char den Filestream zu überprüfen.
+Falls der Char ein Komma oder 13/10/1310 einliest, wird ein Eintrag hinzugefügt, beziehungsweise die Einträge um 1 erhöht.
+Im nachfolgenden Schritt werden die Ausmaße der Gesamtmatrix erfasst.
+Die Gesamtmatrix setzt sich aus einer quadratischen Matrix und einem Vektor b, der neben der quadratischen Matrix steht, zusammen.
+Um das Verhältnis der Matrix auszurechnen, machen wir uns genau diese Information zu Nutzen, es resultiert:
+Einträge = Zeilen*(Zeilen+1) = Zeilen * Spalten,
+Folgend wird ein CharArray initialisiert, das einen String speichern soll. Zusätzlich wird ein tempchar initialisiert der das gelesene Element temporär speichert.
+Bei jeder Zeigerbewegung wird der String um temp erweitert, temp variiert und ist mal das Zeichen, mal die Terminierung des Strings, also das Stringende.
+Wenn der numberstring voll ist, bzw endet, weil er terminiert wird, wird der string zu double konvertiert und number zugeschrieben.
+Direkt darauf wird der Wert einer Zelle der GMatrix zugewiesen, danach wird der Index des Arrays/der Matrix verschoben, in den dann wieder die neue number abgespeichert wird.
+Im Falle eines Zeilenumbruchs wird der Index des Array in der Zeile um 1 erhöht und in der Spalte auf 0 gesetzt.
+Dadurch wird das gesamte Array richtig abgespeichert, mit allen aus der csv-Datei übergeben Werten.
+Im nächsten Schritt sollen alle Nullzeilen ignoriert werden, das heißt wir schieben sie an das Zeilenende des Arrays und ignorieren sie später bei der Übergabe an die
+richtige Matrix und den Vektor, beziehungsweise passen die Arraygröße auf Zeilen-Nullzeilen an.
+Danach wird die (neue&richtige) Matrix mit allen Werten der GMatrix von 0<=x<Spalten-1 besetzt für alle Zeilen abzüglich der Nullzeilen.
+Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder ohne Nullzeilen, deklariert.
+
 */
 
 #include <stdio.h>
@@ -28,7 +43,7 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konv500.csv", "r");
+        fp = fopen("konvnulltest.csv", "r");
 
 
         if (fp == NULL)
@@ -42,13 +57,19 @@ int main() {
                 char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
                 char numberstring[13];                  //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
                 numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
+                bool prevcharbreak = false;             //Boolean um das vorgehende Zeichen zu prüfen --> Plattformunabhängig (Unix, Linux, Android, macOS, AmigaOS, BSD, Windows, DOS, OS/2, CP/M, TOS (Atari), Mac OS Classic, Apple II, C64)
                 //numberstring = (char *) malloc(size * sizeof(char));  //Dynamische Speicherbereitstellung für Matrix
                 fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
 
                   while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
                     temp = c;                               //temp = momentanes Zeichen
-                    if (c == '\n'|| c == ','||c=='\r') {    //if c = Zeilenumbruch oder Komma
+                    if ((c == '\n' && prevcharbreak==false)|| c == ',') {    //if c = Zeilenumbruch oder Komma
                         eintraege++;
+
+                    }
+                    if (c=='\r') {    //if c = Zeilenumbruch oder Komma
+                        eintraege++;
+                        prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
 
                     }
 
@@ -170,16 +191,16 @@ int main() {
                         */
 
 
-
+                ncounter = (ncounter/2);
                 printf("Nullzeilen: %d\n", ncounter);
                 double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
                 double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
-                for(int vz = 0; vz<zeilen; vz++)
+                for(int vz = 0; vz<zeilen-ncounter+1; vz++)
                 {
                     Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
                 }
 
-                for(int mz=0; mz<zeilen; mz++)
+                for(int mz=0; mz<zeilen-ncounter+1; mz++)
                 {
                     for(int ms=0; ms<spalten-1; ms++)
                     {
@@ -187,22 +208,25 @@ int main() {
                     }
                 }
 
-                /*
 
-                Abfrage der Werte der neuen Matrix und des Vektors zur Kontrolle:
 
-                for(int r = 0; r<zeilen; r++)
+                //Abfrage der Werte der neuen Matrix und des Vektors zur Kontrolle:
+
+                /*for(int r = 0; r<zeilen-ncounter+1; r++)
                 {
                     printf("%lf\n",Vector[r]);
-                }
-
-                for (int t = 0; t<zeilen; t++)
+                }*/
+                int test = 0;
+                for (int t = 0; t<zeilen-(ncounter); t++)
                 {
                     for(int x = 0; x<spalten-1; x++)
                     {
-                        printf("%lf\n",Matrix[t][x]);
+                        printf("%lf ",Matrix[t][x]);
+                        test++;
+                        if(x==spalten-2){printf("\n");}
                     }
-                }*/
+                }
+                printf("%d",test);
             }
 
 
