@@ -42,7 +42,13 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konv500.csv", "r");
+        fp = fopen("konvtest.csv", "r");
+
+
+
+
+
+
 
 
         if (fp == NULL)
@@ -195,18 +201,104 @@ int main() {
                 printf("Nullzeilen: %d\n", ncounter);
                 long double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
                 long double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
-                for(int vz = 0; vz<zeilen-ncounter+1; vz++)
+                for(int vz = 0; vz<zeilen-ncounter; vz++)
                 {
                     Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
                 }
 
-                for(int mz=0; mz<zeilen-ncounter+1; mz++)
+                for(int mz=0; mz<zeilen-ncounter; mz++)
                 {
                     for(int ms=0; ms<spalten-1; ms++)
                     {
                         Matrix[mz][ms]=GMatrix[mz][ms];     //Quadratische Matrix = Gmatrix -Vektor
                     }
                 }
+
+                long double xstart[zeilen-ncounter];
+                for (int j = 0; j<zeilen-ncounter; j++)
+                {
+                    xstart[j] = 0;
+                }
+                printf("\n%d\n", zeilen-ncounter);
+
+
+                /*Berechnungansatz*/
+
+                long double xneu[zeilen-ncounter];
+                unsigned int schritte = 1000000;
+                for (int k = 0; k<schritte; k++)
+                {
+                    for(int ce1 = 0; ce1 < zeilen-ncounter; ce1++)
+                    {
+                        xneu[ce1] = Vector[ce1];
+                    }
+
+                    for(int i = 0;i<zeilen-ncounter; i++)
+                    {
+                        for(int j = 0;j<zeilen-ncounter; j++)
+                        {
+                            if(i!=j)
+                            {
+                                 xneu[i] = xneu[i]-Matrix[i][j]*xstart[j];
+                                //xstart[i] = Matrix[i][i] - Matrix[i][k] + Vector[i];
+                            }
+                        }
+                        xneu[i] = xneu[i]/Matrix[i][i];
+                    }
+                    for(int ce2 = 0; ce2 < zeilen-ncounter; ce2++)
+                    {
+                        xstart[ce2] = xneu[ce2];
+                    }
+                }
+
+                printf("kjfegwhfi\n");
+                for (int uuu = 0; uuu<zeilen-ncounter; uuu++)
+                {
+                    printf("%.10Lf\n", xstart[uuu]);
+
+                }
+
+
+
+
+
+                /*
+                printf("%Lf ", Matrix[0][0]);
+                printf("%Lf ", Matrix[1][1]);
+                printf("%Lf ", Matrix[2][2]);
+                */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -226,11 +318,15 @@ int main() {
                         if(x==spalten-2){printf("\n");}
                     }
                 }
-                printf("%d",test);*/ printf("%Lf", Matrix[0][0]);
+                printf("%d",test);printf("%.18Lf", Matrix[0][0]);*/
             }
 
 
         fclose(fp);
+
+
+
+
 
     return 0;
 }
