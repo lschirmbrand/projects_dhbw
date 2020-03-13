@@ -17,7 +17,6 @@ Im nächsten Schritt sollen alle Nullzeilen ignoriert werden, das heißt wir sch
 richtige Matrix und den Vektor, beziehungsweise passen die Arraygröße auf Zeilen-Nullzeilen an.
 Danach wird die (neue&richtige) Matrix mit allen Werten der GMatrix von 0<=x<Spalten-1 besetzt für alle Zeilen abzüglich der Nullzeilen.
 Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder ohne Nullzeilen, deklariert.
-
 */
 
 #include <stdio.h>
@@ -43,7 +42,7 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konvnulltest.csv", "r");
+        fp = fopen("konv500.csv", "r");
 
 
         if (fp == NULL)
@@ -52,10 +51,11 @@ int main() {
             {
                 printf("Die Datei konnte geöffnet werden.\n\n\n");
                 unsigned int eintraege = 0;             //Nutzung der insgesamten Einträge, um Zeilen/Spalten auszurechnen
+                const int length = 30;
                 char c = 0;                             //Einführung der "Zeiger"-Variable, wird zur Abfrage verwendet, was an Stelle x steht
-                double number = 0;                      //Einführung number, hat Wert der einzelnen Zellen der Matrix
+                long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
                 char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
-                char numberstring[13];                  //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
+                char numberstring[length];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
                 numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
                 bool prevcharbreak = false;             //Boolean um das vorgehende Zeichen zu prüfen --> Plattformunabhängig (Unix, Linux, Android, macOS, AmigaOS, BSD, Windows, DOS, OS/2, CP/M, TOS (Atari), Mac OS Classic, Apple II, C64)
                 //numberstring = (char *) malloc(size * sizeof(char));  //Dynamische Speicherbereitstellung für Matrix
@@ -67,7 +67,7 @@ int main() {
                         eintraege++;
 
                     }
-                    if (c=='\r') {    //if c = Zeilenumbruch oder Komma
+                    if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
                         eintraege++;
                         prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
 
@@ -101,7 +101,7 @@ int main() {
 
 
 
-                    double GMatrix[zeilen][spalten];
+                    long double GMatrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
                     int ncounter = 0;               //Variable zur Protokollierung der insgesamten Nullzeilen
@@ -112,7 +112,7 @@ int main() {
                         if (c == '\n'||c=='\r') {                   //falls Zeilenumsprung gelesen wird
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
-                            number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
+                            number = strtold(numberstring,'\0');    //Numbertostring wird zu double konvertiert und in Number gespeichert
                             GMatrix[iz][is] = number;
 
                             iz++;                                   //Sprung in nächste Zeile
@@ -124,7 +124,7 @@ int main() {
                         if (c == ',') {                             //Falls Komma gelesen wird
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
-                            number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
+                            number = strtold(numberstring,'\0');    //Numbertostring wird zu double konvertiert und in Number gespeichert
                             GMatrix[iz][is] = number;
                             is++;                                   //Spalte wird um eins erhöht, also nach rechts geschoben
                             numberstring[0] = '\0';                 //CharArray wird gecleared
@@ -193,8 +193,8 @@ int main() {
 
                 ncounter = (ncounter/2);
                 printf("Nullzeilen: %d\n", ncounter);
-                double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
-                double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
+                long double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
+                long double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
                 for(int vz = 0; vz<zeilen-ncounter+1; vz++)
                 {
                     Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
@@ -215,7 +215,7 @@ int main() {
                 /*for(int r = 0; r<zeilen-ncounter+1; r++)
                 {
                     printf("%lf\n",Vector[r]);
-                }*/
+                }
                 int test = 0;
                 for (int t = 0; t<zeilen-(ncounter); t++)
                 {
@@ -226,7 +226,7 @@ int main() {
                         if(x==spalten-2){printf("\n");}
                     }
                 }
-                printf("%d",test);
+                printf("%d",test);*/ printf("%Lf", Matrix[0][0]);
             }
 
 
