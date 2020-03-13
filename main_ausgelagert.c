@@ -46,7 +46,7 @@ int main() {
         filename[0]= '\0';                                          //Filename wird leer deklariert.
         bool gueltig = false;                                       //Allgemein genutzte Variable zur Bestimmung von Bedingungen und Abbruch von Schleifen.
         bool out;                                                   //Bool zur Bestimmung der Darstellung des Ergebnis, auch zur Fehlerbestimmung
-        double fehlerschranke = 0.0000000001;                       //Standard-Fehlerschranke (1-e10)
+        long double fehlerschranke = 0.0000000001;                  //Standard-Fehlerschranke (1-e10)
         char J[]="J"; char j[]="j"; char N[]="N"; char n[]="n";     //Initialsierung von Chars, die zur Bedingungsabfrage genutz werden (Ja&Nein-Antworten)
         char fehlerschrankechar[50];                                //Fehlerschrankechar ist eine Variable, in der die Antwort gespeichert wird und mit der Bedingung verglichen wird
         fehlerschrankechar[0] = '\0';                               //CharArray wird leer deklariert
@@ -151,7 +151,8 @@ bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
                 printf("Die Datei konnte geöffnet werden.\n\n\n");
                 unsigned int eintraege = 0;             //Nutzung der insgesamten Einträge, um Zeilen/Spalten auszurechnen
                 char c = 0;                             //Einführung der "Zeiger"-Variable, wird zur Abfrage verwendet, was an Stelle x steht
-                long double number = 0;                      //Einführung number, hat Wert der einzelnen Zellen der Matrix
+                long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
+                const int length = 30;                  //konstantes Maximum
                 char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
                 char numberstring[13];                  //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
                 numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
@@ -165,7 +166,7 @@ bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
                         eintraege++;
 
                     }
-                    if (c=='\r') {    //if c = Zeilenumbruch oder Komma
+                    if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
                         eintraege++;
                         prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
 
@@ -200,9 +201,9 @@ bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
 
 
                     long double GMatrix[zeilen][spalten];
-                    int is = 0;                     //Variable, die Spalte in Matrix beschreibt
-                    int iz = 0;                     //Variable die Zeile in Matrix beschreibt
-                    int ncounter = 0;               //Variable zur Protokollierung der insgesamten Nullzeilen
+                    int is = 0;                             //Variable, die Spalte in Matrix beschreibt
+                    int iz = 0;                             //Variable die Zeile in Matrix beschreibt
+                    int ncounter = 0;                       //Variable zur Protokollierung der insgesamten Nullzeilen
 
                     fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
                     while((c=fgetc(fp)) != EOF) {                   //Schleife, s.o
@@ -210,7 +211,7 @@ bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
                         if (c == '\n'||c=='\r') {                   //falls Zeilenumsprung gelesen wird
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
-                            number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
+                            number = strtold(numberstring,'\0');    //Numbertostring wird zu double konvertiert und in Number gespeichert
                             GMatrix[iz][is] = number;
 
                             iz++;                                   //Sprung in nächste Zeile
@@ -222,7 +223,7 @@ bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
                         if (c == ',') {                             //Falls Komma gelesen wird
                             temp = '\0';
                             strncat(numberstring, &temp, 1);        //CharArray wird verkettet
-                            number = atof(numberstring);            //Numbertostring wird zu double konvertiert und in Number gespeichert
+                            number = strtold(numberstring,'\0');    //Numbertostring wird zu double konvertiert und in Number gespeichert
                             GMatrix[iz][is] = number;
                             is++;                                   //Spalte wird um eins erhöht, also nach rechts geschoben
                             numberstring[0] = '\0';                 //CharArray wird gecleared
