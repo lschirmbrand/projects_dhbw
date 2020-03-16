@@ -39,7 +39,7 @@ typedef enum
 {
     JACOBI = 0, GAUSS_SEIDEL = 1
 } Method;
-
+//denis war hier auch
 
 int main() {
         char filename[1000];                                        //Speicherplatz für Namen der Datei, die geöffnet werden soll. Maximale Länge des Dateinamens: 999
