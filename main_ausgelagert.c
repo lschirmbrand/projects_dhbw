@@ -15,7 +15,7 @@ Im Falle eines Zeilenumbruchs wird der Index des Array in der Zeile um 1 erhöht
 Dadurch wird das gesamte Array richtig abgespeichert, mit allen aus der csv-Datei übergeben Werten.
 Im nächsten Schritt sollen alle Nullzeilen ignoriert werden, das heißt wir schieben sie an das Zeilenende des Arrays und ignorieren sie später bei der Übergabe an die
 richtige Matrix und den Vektor, beziehungsweise passen die Arraygröße auf Zeilen-Nullzeilen an.
-Danach wird die (neue&richtige) Matrix mit allen Werten der GMatrix von 0<=x<Spalten-1 besetzt für alle Zeilen abzüglich der Nullzeilen.
+Danach wird die (neue&richtige) Matrix mit allen Werten der GMatrix von 0<=x<Spalten besetzt für alle Zeilen abzüglich der Nullzeilen.
 Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder ohne Nullzeilen, deklariert.
 
 */
@@ -339,6 +339,107 @@ else {return false;}
 
 int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
 
+    long double xalt[zeilen-ncounter];
+    long double xneu[zeilen-ncounter];
+    unsigned int schritte = 100;
+
+
+
+        /*Berechnungansatz Jacobi-Verhalten*/
+
+
+
+                for (int k = 0; k<schritte; k++)
+                {
+                    for(int ce1 = 0; ce1 < zeilen-ncounter; ce1++)
+                    {
+                        xneu[ce1] = Vector[ce1];
+                    }
+
+                    for(int i = 0;i<zeilen-ncounter; i++)
+                    {
+                        for(int j = 0;j<zeilen-ncounter; j++)
+                        {
+                            if(i!=j)
+                            {
+                                 xneu[i] = xneu[i]-Matrix[i][j]*xstart[j];
+                            }
+                        }
+                        xneu[i] = xneu[i]/Matrix[i][i];
+                    }
+                    for(int ce2 = 0; ce2 < zeilen-ncounter; ce2++)
+                    {
+                        xstart[ce2] = xneu[ce2];
+                    }
+                }
+
+
+                for (int uuu = 0; uuu<zeilen-ncounter; uuu++)
+                {
+                    printf("%.10Lf\n", xstart[uuu]);
+
+                }
+
+
+                /*Berechnungsansatz Gauß Seidel Verfahren*/
+
+
+
+
+
+            dif = 1;
+
+            for (int i = 0; i < dim; i++)
+            {
+                xalt[i] = 0;
+            }
+
+        //start
+
+            //Iterationsschleife bis Konvergenz erreicht:
+            for (int c = 0; c < iSteps; c++)
+            {
+                /* Normwerte := 0 damit Differenz bei jedem
+                 * neuen Schritt neu berechnet werden kann:*/
+                normNew = 0;
+                normOld = 0;
+
+                //Falls Grenzwert kleiner Differenzwert:
+                if (limit < dif)
+                {
+                    //Zeilenschleife:
+                    for (int i = 0; i < dim; i++)
+                    {
+                        resArr[i] = 0;
+
+                        //Spaltenschleifen:
+                        for (int j = 0; j < i - 1; j++)
+                        {
+                            resArr[i] = resArr[i] + (matArr[i, j] * resArr[j]);
+                        }
+                        for (int j = i + 1; j < dim; j++)
+                        {
+                            resArr[i] = resArr[i] + (matArr[i, j] * tmpArr[j]);
+                        }
+                        resArr[i] = (vecArr[i] - resArr[i]) / matArr[i, i];
+                    }
+                }
+
+                //Berechnung der Euklidischen Norm:
+                for (int k = 0; k < dim; k++)
+                {
+                    normNew += Math.Abs(resArr[k] * resArr[k]);
+                    normOld += Math.Abs(tmpArr[k] * tmpArr[k]);
+                }
+
+                //Berechnung der Differenz:
+                dif = normNew - normOld;
+
+                MessageBox.Show(dif.ToString());
+
+                resArr.CopyTo(tmpArr, 0);
+            }
+            showResult(resArr, gbStartResult, dim);
 return 0;
 }
 

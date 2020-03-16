@@ -42,7 +42,7 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konvtest.csv", "r");
+        fp = fopen("konv3.csv", "r");
 
 
 
@@ -199,6 +199,7 @@ int main() {
 
                 ncounter = (ncounter/2);
                 printf("Nullzeilen: %d\n", ncounter);
+                const int  maxsteps = 10000;
                 long double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
                 long double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
                 for(int vz = 0; vz<zeilen-ncounter; vz++)
@@ -222,10 +223,18 @@ int main() {
                 printf("\n%d\n", zeilen-ncounter);
 
 
-                /*Berechnungansatz*/
 
-                long double xneu[zeilen-ncounter];
-                unsigned int schritte = 1000000;
+    long double xneu[zeilen-ncounter];
+    unsigned int schritte = 100;
+    double diff = 1;
+    double limit = 0.00000001;
+
+
+
+        /*Berechnungansatz Jacobi-Verhalten*/
+
+
+
                 for (int k = 0; k<schritte; k++)
                 {
                     for(int ce1 = 0; ce1 < zeilen-ncounter; ce1++)
@@ -240,7 +249,6 @@ int main() {
                             if(i!=j)
                             {
                                  xneu[i] = xneu[i]-Matrix[i][j]*xstart[j];
-                                //xstart[i] = Matrix[i][i] - Matrix[i][k] + Vector[i];
                             }
                         }
                         xneu[i] = xneu[i]/Matrix[i][i];
@@ -251,7 +259,7 @@ int main() {
                     }
                 }
 
-                printf("kjfegwhfi\n");
+
                 for (int uuu = 0; uuu<zeilen-ncounter; uuu++)
                 {
                     printf("%.10Lf\n", xstart[uuu]);
@@ -259,66 +267,68 @@ int main() {
                 }
 
 
+                /*Berechnungsansatz Gauß Seidel Verfahren*/
 
+               //Iterationsschleife bis Konvergenz erreicht:
+               double normNeu;
+               double normAlt;
+               schritte = 0;
 
+            for (int c = 0; c < schritte; c++)
+            {
+                /* Normwerte := 0 damit Differenz bei jedem
+                 * neuen Schritt neu berechnet werden kann:*/
+                normNeu = 0;
+                normAlt = 0;
 
-                /*
-                printf("%Lf ", Matrix[0][0]);
-                printf("%Lf ", Matrix[1][1]);
-                printf("%Lf ", Matrix[2][2]);
-                */
+                //Falls Grenzwert kleiner Differenzwert:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                //Abfrage der Werte der neuen Matrix und des Vektors zur Kontrolle:
-
-                /*for(int r = 0; r<zeilen-ncounter+1; r++)
+                if (limit < diff)
                 {
-                    printf("%lf\n",Vector[r]);
-                }
-                int test = 0;
-                for (int t = 0; t<zeilen-(ncounter); t++)
-                {
-                    for(int x = 0; x<spalten-1; x++)
+                    //Zeilenschleife:
+                    for (int i = 0; i < zeilen - ncounter; i++)
                     {
-                        printf("%lf ",Matrix[t][x]);
-                        test++;
-                        if(x==spalten-2){printf("\n");}
+                        xneu[i] = 0;
+
+                        //Spaltenschleifen:
+                        for (int j = 0; j < i; j++)
+                        {
+                            xneu[i] = xneu[i] + (Matrix[i][j] * xneu[j]);
+                        }
+                        for (int j = i + 1; j < zeilen-ncounter; j++)
+                        {
+                            xneu[i] = xneu[i] + (Matrix[i][j] * xstart[j]);
+                        }
+                        xneu[i] = (Vector[i] - xneu[i]) / Matrix[i][i];
                     }
+
                 }
-                printf("%d",test);printf("%.18Lf", Matrix[0][0]);*/
+
+                //Berechnung NormNeu&NormAlt:
+                for (int k = 0; k < zeilen - ncounter; k++)
+                {
+                    normNeu += abs(xneu[k] * xneu[k]);
+                    normAlt += abs(xstart[k] * xstart[k]);
+                }
+
+                //BerechDifferenz:
+                diff = normNeu - normAlt;
+
+
+
+                for (int copy = 0; copy < zeilen-ncounter; copy++)
+                {
+                    xstart[copy] = xneu[copy];
+                }
+
+                schritte++;
+
+            }
+                for(int p = 0; p < zeilen - ncounter; p++)
+                {
+                    printf("%.10Lf\n", xneu[p]);
+                }
+                printf("schritte: %d",schritte);
             }
 
 
