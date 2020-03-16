@@ -7,9 +7,17 @@ Im nachfolgenden Schritt werden die Ausmaße der Gesamtmatrix erfasst.
 Die Gesamtmatrix setzt sich aus einer quadratischen Matrix und einem Vektor b, der neben der quadratischen Matrix steht, zusammen.
 Um das Verhältnis der Matrix auszurechnen, machen wir uns genau diese Information zu Nutzen, es resultiert:
 Einträge = Zeilen*(Zeilen+1) = Zeilen * Spalten,
-Folgend wird ein CharArray initialisiert, das einen String speichern soll. Zusätzlich wird ein tempchar initialisiert der das gelesene Element temporär speichert.
+
+
+
+Folgend wird ein CharArray initialisiert, das einen String speichern soll.
+Zusätzlich wird ein tempchar initialisiert der das gelesene Element temporär speichert.
 Bei jeder Zeigerbewegung wird der String um temp erweitert, temp variiert und ist mal das Zeichen, mal die Terminierung des Strings, also das Stringende.
 Wenn der numberstring voll ist, bzw endet, weil er terminiert wird, wird der string zu double konvertiert und number zugeschrieben.
+
+// kurz gesagt, die csv datei wird geparst
+
+
 Direkt darauf wird der Wert einer Zelle der GMatrix zugewiesen, danach wird der Index des Arrays/der Matrix verschoben, in den dann wieder die neue number abgespeichert wird.
 Im Falle eines Zeilenumbruchs wird der Index des Array in der Zeile um 1 erhöht und in der Spalte auf 0 gesetzt.
 Dadurch wird das gesamte Array richtig abgespeichert, mit allen aus der csv-Datei übergeben Werten.
@@ -42,72 +50,33 @@ typedef enum
 
 int main() {
         FILE *fp;
-        fp = fopen("konv3.csv", "r");
+        fp = fopen("testdateien/konv3.csv", "r");
 
-	// Denis war hier
+//einlesen der datei
 
+        if (fp == NULL) printf("Die Datei konnte nicht geöffnet werden.");
+        if (fp!=NULL){
+            printf("Die Datei konnte geöffnet werden.\n\n\n");
+            const int length = 30;
+            char c;
+            long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
+            char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
+            char numberstring[length];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
+            numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
+            //numberstring = (char *) malloc(size * sizeof(char));  //Dynamische Speicherbereitstellung für Matrix
 
+//zählen der enträge
+            int eintraege = countEintraege(fp);
+            printf("Eintraege:\t%d\n", eintraege);
+//ermitteln wie viele zeilen und spalten
+            int zeilen = getZeilen(eintraege), spalten = zeilen+1;
+            printf("Zeilen:\t\t%d\nSpalten:\t%d\n\n", zeilen, spalten);
 
-
-
-
-        if (fp == NULL)
-            { printf("Die Datei konnte nicht geöffnet werden."); }
-        if (fp!=NULL)
-            {
-                printf("Die Datei konnte geöffnet werden.\n\n\n");
-                unsigned int eintraege = 0;             //Nutzung der insgesamten Einträge, um Zeilen/Spalten auszurechnen
-                const int length = 30;
-                char c = 0;                             //Einführung der "Zeiger"-Variable, wird zur Abfrage verwendet, was an Stelle x steht
-                long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
-                char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
-                char numberstring[length];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
-                numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
-                bool prevcharbreak = false;             //Boolean um das vorgehende Zeichen zu prüfen --> Plattformunabhängig (Unix, Linux, Android, macOS, AmigaOS, BSD, Windows, DOS, OS/2, CP/M, TOS (Atari), Mac OS Classic, Apple II, C64)
-                //numberstring = (char *) malloc(size * sizeof(char));  //Dynamische Speicherbereitstellung für Matrix
-                fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
-
-                  while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
-                    temp = c;                               //temp = momentanes Zeichen
-                    if ((c == '\n' && prevcharbreak==false)|| c == ',') {    //if c = Zeilenumbruch oder Komma
-                        eintraege++;
-
-                    }
-                    if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
-                        eintraege++;
-                        prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
-
-                    }
-
-                  }
+//parse Matrix
+            long double GMatrix[zeilen][spalten];
+            GMatrix[0][0] = '/0';
 
 
-                    printf("Eintraege:\t%d\n", eintraege);
-
-                    int zeilen = 0;                     //Initialisierung der Variable für Zeilen
-                    int spalten = 0;                    //Initialisierung der Variable für spalten
-
-                    if (eintraege > 0){                 //wenn mindestens 1 Eintrag in der Datei ist
-                        for (int i = 0; i<1000; i++)    //Schleife für maximal 1.001.000 Einträge
-                        {
-                            if(eintraege == zeilen*(zeilen+1))  //wenn spalten * zeilen = einträge, spalten ist richtig und wird gespiechert, genau wie Zeilen
-                            {
-                                spalten= zeilen + 1;            //Spalten = Matrix + Vektor
-                                break;
-                            }
-                            else
-                            {
-                                zeilen++;               //Zeilen werden immer erhöht, bis Schleifenende erreicht oder Einträge = Zeilen * Spalten bzw Zeilen * (Zeilen+1)
-                            }
-                        }
-
-                        printf("Zeilen:\t\t%d\nSpalten:\t%d\n\n", zeilen, spalten);
-
-                    }
-
-
-
-                    long double GMatrix[zeilen][spalten];
                     int is = 0;                     //Variable, die Spalte in Matrix beschreibt
                     int iz = 0;                     //Variable die Zeile in Matrix beschreibt
                     int ncounter = 0;               //Variable zur Protokollierung der insgesamten Nullzeilen
@@ -147,36 +116,28 @@ int main() {
                       /*For Schleife die komplettes Array durchläuft, 0-Zeilen löscht
                         bzw die Zeilen darunter verschiebt um die Lücke zu füllen*/
 
-
+//nullzeilen löschen
                         for (int z = 0; z<zeilen; z++)              //Durchlaufen aller Zeilen
                         {
                             for (int i = 0; i<spalten; i++)         //Durchlaufen aller Spalten
                             {
-                                if(GMatrix[z][i]!=0)                 //Wenn Eintrag in Zelle !=0
-                                {
-                                    break;                          //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
-                                }
+                                if(GMatrix[z][i]!=0) break;                //Wenn Eintrag in Zelle !=0
+                                //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
+
                                 else{
-                                        if (i==spalten-1 && GMatrix[z][i] == 0)      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
-                                        {
-                                            ncounter++;                             //Protokolierung der Nullzeilen
-                                            for(int zv=z; zv<zeilen-1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
-                                            {
-                                                for(int sv = 0; sv<spalten;sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
-                                                {
-                                                    GMatrix[zv][sv]=GMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
-                                                }
+                                    if (i==spalten-1 && GMatrix[z][i] == 0){      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
+                                        ncounter++;                             //Protokolierung der Nullzeilen
+                                        for(int zv=z; zv<zeilen-1; zv++){        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
+                                            for(int sv = 0; sv<spalten;sv++){    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
+                                                GMatrix[zv][sv]=GMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
                                             }
-                                            for(int nz = 0; nz<spalten;nz++)
-                                            {
-                                                GMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
-                                            }
-
                                         }
-
+                                        for(int nz = 0; nz<spalten;nz++){
+                                            GMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
+                                        }
                                     }
+                                }
                             }
-
                         }
 
                         /*Überprüfung der Matrix
@@ -196,33 +157,28 @@ int main() {
                         }
                         */
 
-
-                ncounter = (ncounter/2);
+//tatsächliche matrix + vektor
+                ncounter /= 2;
                 printf("Nullzeilen: %d\n", ncounter);
                 const int  maxsteps = 10000;
                 long double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
                 long double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
                 for(int vz = 0; vz<zeilen-ncounter; vz++)
-                {
                     Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
-                }
-
                 for(int mz=0; mz<zeilen-ncounter; mz++)
-                {
                     for(int ms=0; ms<spalten-1; ms++)
-                    {
                         Matrix[mz][ms]=GMatrix[mz][ms];     //Quadratische Matrix = Gmatrix -Vektor
-                    }
-                }
+
 
                 long double xstart[zeilen-ncounter];
                 for (int j = 0; j<zeilen-ncounter; j++)
-                {
                     xstart[j] = 0;
-                }
                 printf("\n%d\n", zeilen-ncounter);
 
 
+
+
+//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
 
     long double xneu[zeilen-ncounter];
     unsigned int schritte = 100;
@@ -266,7 +222,7 @@ int main() {
 
                 }
 
-
+//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
                 /*Berechnungsansatz Gauß Seidel Verfahren*/
 
                //Iterationsschleife bis Konvergenz erreicht:
@@ -329,9 +285,7 @@ int main() {
                     printf("%.10Lf\n", xneu[p]);
                 }
                 printf("schritte: %d",schritte);
-            }
-
-
+        }
         fclose(fp);
 
 
@@ -351,6 +305,39 @@ return true;
 int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
 
 return 0;
+}
+
+
+int countEintraege(FILE* fp){
+    int i = 0;
+    char c;
+    bool prevcharbreak = false;
+    fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
+
+    while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
+       char temp = c;                               //temp = momentanes Zeichen
+       if ((c == '\n' && prevcharbreak==false)|| c == ',') {    //if c = Zeilenumbruch oder Komma
+           i++;
+       }
+       if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
+           i++;
+           prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
+       }
+     }
+     return i;
+
+}
+
+int getZeilen(int eintraege){
+    int zeilen = 0;
+    if (eintraege > 0){
+        for (int i = 0; i<1000; i++)
+            if(eintraege == zeilen*(zeilen+1))
+                break;
+            else zeilen++;
+        return zeilen;
+    }
+    else return 0;
 }
 
 
