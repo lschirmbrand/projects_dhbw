@@ -44,7 +44,7 @@ int main() {
         FILE *fp;
         fp = fopen("konv3.csv", "r");
 
-
+	// Denis war hier
 
 
 
