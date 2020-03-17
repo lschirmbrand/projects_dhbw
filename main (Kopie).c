@@ -33,13 +33,11 @@ Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder oh
 #include <string.h>
 
 typedef struct
-{
-    int n;
+{    int n;
     double **data;
 } Matrix;
 typedef struct
-{
-    int n;
+{    int n;
     double *data;
 } Vector;
 typedef enum
@@ -49,8 +47,100 @@ typedef enum
 
 
 int main() {
-        FILE *fp;
-        fp = fopen("testdateien/konv32.csv", "r");
+
+        char filename[1000];                                        //Speicherplatz für Namen der Datei, die geöffnet werden soll. Maximale Länge des Dateinamens: 999
+        filename[0]= '\0';
+        bool gueltig = false;                                       //Allgemein genutzte Variable zur Bestimmung von Bedingungen und Abbruch von Schleifen.
+        bool out;                                                   //Bool zur Bestimmung der Darstellung des Ergebnis, auch zur Fehlerbestimmung
+        long double fehlerschranke = 0.0000000001;                  //Standard-Fehlerschranke (1-e10)
+        char J[]="J"; char j[]="j"; char N[]="N"; char n[]="n";     //Initialsierung von Chars, die zur Bedingungsabfrage genutz werden (Ja&Nein-Antworten)
+        char fehlerschrankechar[50];                                //Fehlerschrankechar ist eine Variable, in der die Antwort gespeichert wird und mit der Bedingung verglichen wird
+        fehlerschrankechar[0] = '\0';
+        char output[50];                                            //Output ist eine Variable, in der die Antwort gespeichert wird und mit der Bedingung verglichen wird
+        output[0] = '\0';
+        do{                                             //solange nicht richtiges Antwortformat comitted wird
+        printf("Wie heißt die zu öffnende CSV-Datei?\nAchtung, die Eingabe muss mit der Dateiendung .csv versehen sein.\n\n-> " );
+        scanf("%s",&filename);
+            if(strchr('testdateien/',strchr(filename,'.csv'))){                                                                                                 //Wenn im Dateinamen richtiges Dateiformat enthalten ist -> Verlassen der Schleife
+                                                                                          //Wenn Methode load erfolgreich ist, die Datei öffnet und abspeichert
+                if(load(filename, long double Matrix[Matrix.n][Matrix.n]) == true){
+                    printf("Die Datei wurde erfolgreich geladen und die Matrix und Vektoren initialisiert.\n");
+                    gueltig = true;
+                }
+                else{
+                    printf("Die Datei konnte nicht geöfnet werden! Existiert die Datei wirklich? Befindet sie sich im richtigen Dateipfad?");
+                    gueltig = false;
+                }
+            }
+        } while(!gueltig);
+        do{
+            printf("Die Standard Fehlerschranke in diesem Programm liegt bei:  %1.e,  soll eine eigene Fehlerschranke eingegeben werden?(J/N)\n-> ", fehlerschranke);           //Standardfehlerschranke oder eigene?
+            scanf("%s", &fehlerschrankechar );
+
+            if(strcmp(fehlerschrankechar, J)==0 || strcmp(fehlerschrankechar, j) == 0){                                                                                          //Antwort ja
+                printf("Bitte geben sie eine Fehlerschranke (in Dezimalschreibweise) ein: \n-> ");                                                                              //Aufforderung die Fehlerschranke einzugeben
+                scanf("%lf", fehlerschranke);                                                                                                                                   //Überschreiben der Fehlerschranke
+                gueltig = true;                                                                                                                                                 //Verlassen der Schleife
+            }
+            else if (strcmp(fehlerschrankechar, N)==0 || strcmp(fehlerschrankechar, n) == 0){                                                                                    //Antwort nein
+                gueltig = true;                                                                                                                                                 //Verlassen der Schleife mit Standardfehlerschranke
+            }
+            else{
+                printf("Bitte halten sie sich an die Vorgaben des Antwortens. Entweder die Eingabe 'J' für Ja, oder ’N’ für Nein.");
+                gueltig = false;
+            }
+        } while(!gueltig);
+
+
+
+        do{
+            if(true){// (Berechnung == erfolgreich){                                                                                                                                                               //If Berechnung erfolgreich
+                printf("Das Ergebnis kann komplett ausgegeben werden, standardmäßig aber nur der letzte Vektor.\nSoll das ganze Ergebnis ausgegeben werden? (J/N)");        //Ausgabe Ergebnis
+                scanf("%s",&output);                                                                                                                                                                        //Output = Antwort
+                if(strcmp(output, J)==0 || strcmp(output, j) == 0) {                                                                                     //Bedingung, falls Output "Ja" entspricht
+                    printf("Das ganze Ergebnis soll ausgegeben werden:\n\n");                                                                           //Ganzes Ergebnis soll ausgegeben werden
+                    out = true;                                                                                                                         //Siehe eine Zeile darüber
+                    gueltig = true;                                                                                                                     //Schleifenabbruch
+                }
+                else if (strcmp(output, N)==0 || strcmp(output, n) == 0){                                                                                //Bedingung, falls Output "Nein" entspricht
+                    printf("Nur der letzte Vektor soll als Ergbenis ausgegeben werden:\n\n");                                                           //Nur der letzte Vektor soll ausgegeben werden
+                    out = false;                                                                                                                        //Siehe Zeile darüber
+                    gueltig = true;                                                                                                                     //Schleifenabbruch
+                }
+                else{
+                    printf("Bitte halten sie sich an die Vorgaben der Antworten. Entweder die Eingabe 'J' für Ja, oder ’N’ für Nein.");
+                    gueltig = false;
+                }
+            }
+        } while(!gueltig);
+
+        if(out == true){
+            solve(filename, fehlerschranke, out);                                                                      //If ganzes Ergebnis gewollt
+
+        }
+        else if(out == false){                                                                                                                          //If nur der letzte Vektor gewollt
+            solve(filename, fehlerschranke, out);
+        }
+        else{printf("Ein Fehler ist im Programm aufgetreten, die Darstellung des Ergebnis kann nicht geladen werden. Bitte starten sie das Programm neu!\n\n");}        //Ein Fehler ist aufgetreten, Programmabfolge beschädigt
+    return 0;
+
+
+
+
+
+        //fclose(fp);
+
+
+
+
+
+    return 0;
+}
+
+bool load (const char *filename, Matrix *A, Vector *b, Vector *x){
+
+FILE *fp;
+        fp = fopen("testdateien/konv3.csv", "r");
 
 //einlesen der datei
 
@@ -66,14 +156,14 @@ int main() {
             //numberstring = (char *) malloc(size * sizeof(char));  //Dynamische Speicherbereitstellung für Matrix
 
 //zählen der enträge
-            int eintraege = countEintraege(fp);
+            int *eintraege = countEintraege(fp);
             printf("Eintraege:\t%d\n", eintraege);
 //ermitteln wie viele zeilen und spalten
-            int zeilen = getZeilen(eintraege), spalten = zeilen+1;
+            int *zeilen = getZeilen(eintraege), *spalten = &zeilen+1;
             printf("Zeilen:\t\t%d\nSpalten:\t%d\n\n", zeilen, spalten);
 
 //parse Matrix
-            long double GMatrix[zeilen][spalten];
+            long double GMatrix[*zeilen][*spalten];
             GMatrix[0][0] = '/0';
 
 
@@ -116,7 +206,7 @@ int main() {
                       /*For Schleife die komplettes Array durchläuft, 0-Zeilen löscht
                         bzw die Zeilen darunter verschiebt um die Lücke zu füllen*/
 
-//nullzeilen löschen
+                        //nullzeilen löschen
                         for (int z = 0; z<zeilen; z++)              //Durchlaufen aller Zeilen
                         {
                             for (int i = 0; i<spalten; i++)         //Durchlaufen aller Spalten
@@ -133,150 +223,148 @@ int main() {
                                             }
                                         }
                                         for(int nz = 0; nz<spalten;nz++){
-                                            GMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
+                                            GMatrix[*zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
                                         }
                                     }
                                 }
                             }
                         }
 
-                        /*Überprüfung der Matrix
 
-                        for(int r = 0; r<zeilen-1; r++)
-                        {
-                            for(int z = 0; z<spalten-1; z++)
-                            {
-                                if(r!=spalten){
-                                printf("%lf ",Matrix[r][z]);
-                                }
-                                if(r==spalten){
-                                printf("%lf\n",Matrix[r][z]);
-                                }
-
-                            }
-                        }
-                        */
-
-//tatsächliche matrix + vektor
+                //tatsächliche matrix + vektor
                 ncounter /= 2;
                 printf("Nullzeilen: %d\n", ncounter);
                 const int  maxsteps = 10000;
-                long double Vector[zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
-                long double Matrix[zeilen][spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
+                long double Vector[*zeilen];                      //Einführung des Vektors b, also dem Ergebnis der Matrix
+                long double Matrix[*zeilen][*spalten-1];           //Einführung der tatsächlichen quadratischen Matrix
                 for(int vz = 0; vz<zeilen-ncounter; vz++)
-                    Vector[vz] = GMatrix[vz][spalten-1];    //Vektor = GMatrix-Matrix
+                    Vector[vz] = GMatrix[vz][*spalten-1];    //Vektor = GMatrix-Matrix
                 for(int mz=0; mz<zeilen-ncounter; mz++)
                     for(int ms=0; ms<spalten-1; ms++)
                         Matrix[mz][ms]=GMatrix[mz][ms];     //Quadratische Matrix = Gmatrix -Vektor
 
 
-                long double xstart[zeilen-ncounter];
-                for (int j = 0; j<zeilen-ncounter; j++)
+                long double xstart[*zeilen-ncounter];
+                for (int j = 0; j<*zeilen-ncounter; j++)
                     xstart[j] = 0;
-                printf("\nNullzeilen: %d\n\n", zeilen-ncounter);
+                printf("\n%d\n", *zeilen-ncounter);
 
-
-
-
-//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
-
-    long double xneu[zeilen-ncounter];
-    unsigned int schritte = 100;
-    double diff = 1;
-        /*Berechnungansatz Jacobi-Verhalten*/
-        double vorher[zeilen], nachher[zeilen];
-        vorher[0]='/0';
-        nachher[0]='/0';
-        double maxDiff = 0;
-        int n = 0;
-        double limit = 0.0000000001;
-                do{
-                    for(int ce1 = 0; ce1 < zeilen-ncounter; ce1++)
-                        xneu[ce1] = Vector[ce1];
-                    for(int i = 0;i<zeilen-ncounter; i++)
-                    {
-                        for(int j = 0;j<zeilen-ncounter; j++)
-                            if(i!=j)
-                                 xneu[i] = xneu[i]-Matrix[i][j]*xstart[j];
-                        xneu[i] = xneu[i]/Matrix[i][i];
-                    }
-                    for(int ce2 = 0; ce2 < zeilen-ncounter; ce2++)
-                    {
-                        xstart[ce2] = xneu[ce2];
-                        vorher[ce2] = nachher[ce2];
-                        nachher[ce2] = xstart[ce2];
-                        double diff = vorher[ce2] - nachher[ce2];
-                        if(diff < 0) diff = diff * (-1);        // differenz zwischen vorher nachher
-                        if(diff < maxDiff || n == 0) maxDiff = diff;
-                    }
-                n++;
-                }while(maxDiff > limit);
-                for (int uuu = 0; uuu<zeilen-ncounter; uuu++)
-                    printf("x%d = %.10Lf\n", uuu, xstart[uuu]); //Ausgabe
-                printf("Schritte: %d\n\n",n);
-
-//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
-                //Berechnungsansatz Gauß Seidel Verfahren
-
-               //Iterationsschleife bis Konvergenz erreicht:
-               double normNeu;
-               double normAlt;
-               schritte = 0;
-            do{
-                /* Normwerte := 0 damit Differenz bei jedem
-                 * neuen Schritt neu berechnet werden kann:*/
-                normNeu = 0;
-                normAlt = 0;
-                    //Zeilenschleife:
-                    for (int i = 0; i < zeilen - ncounter; i++)
-                    {
-                        xneu[i] = 0;
-                        //Spaltenschleifen:
-                        for (int j = 0; j < i; j++)
-                            xneu[i] = xneu[i] + (Matrix[i][j] * xneu[j]);
-                        for (int j = i + 1; j < zeilen-ncounter; j++)
-                            xneu[i] = xneu[i] + (Matrix[i][j] * xstart[j]);
-                        xneu[i] = (Vector[i] - xneu[i]) / Matrix[i][i];
-                    }
-                //Berechnung NormNeu&NormAlt:
-                for (int k = 0; k < zeilen - ncounter; k++)
-                {
-                    normNeu += abs(xneu[k] * xneu[k]);
-                    normAlt += abs(xstart[k] * xstart[k]);
-                }
-                //BerechDifferenz:
-                diff = normNeu - normAlt;
-
-                for (int copy = 0; copy < zeilen-ncounter; copy++)
-                    xstart[copy] = xneu[copy];
-
-                schritte++;
-
-            }while(diff > limit);
-
-                for(int p = 0; p < zeilen - ncounter; p++)
-                {
-                    printf("x%d = %.10Lf\n",p, xneu[p]);
-                }
-                printf("schritte: %d",schritte);
-        }
-        fclose(fp);
-
-
-
-
-
-    return 0;
-}
-
-bool load (const char *konv3, Matrix *A, Vector *b, Vector *x){
 
 
 return true;
 
 }
 
-int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
+double solve (Method method, Matrix *A, Vector *b, Vector *x, double e, bool output){
+
+    int *zeilen = getZeilen(*eintraege);
+    long double xneu[*zeilen-*ncounter];
+    unsigned int schritte =0;
+    double diff = 1;
+    double limit = 0.00000001;
+
+    //--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
+
+        /*Berechnung Jacobi-vefahren*/
+
+
+
+                for (int k = 0; k<schritte; k++)
+                {
+                    for(int ce1 = 0; ce1 < zeilen-ncounter; ce1++)
+                    {
+                        xneu[ce1] = Vector[ce1];
+                    }
+
+                    for(int i = 0;i<zeilen-ncounter; i++)
+                    {
+                        for(int j = 0;j<zeilen-ncounter; j++)
+                        {
+                            if(i!=j)
+                            {
+                                 xneu[i] = xneu[i]-Matrix[i][j]*xstart[j];
+                            }
+                        }
+                        xneu[i] = xneu[i]/Matrix[i][i];
+                    }
+                    for(int ce2 = 0; ce2 < zeilen-ncounter; ce2++)
+                    {
+                        xstart[ce2] = xneu[ce2];
+                    }
+                }
+
+
+                for (int uuu = 0; uuu<zeilen-ncounter; uuu++)
+                {
+                    printf("%.10Lf\n", xstart[uuu]);
+
+                }
+
+//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
+                /*Berechnungsansatz Gauß Seidel Verfahren*/
+
+               //Iterationsschleife bis Konvergenz erreicht:
+               double normNeu;
+               double normAlt;
+
+
+            for (int c = 0; c < schritte; c++)
+            {
+                /* Normwerte := 0 damit Differenz bei jedem
+                 * neuen Schritt neu berechnet werden kann:*/
+
+                normNeu = 0;
+                normAlt = 0;
+
+                //Falls Grenzwert kleiner Differenzwert:
+
+                if (limit < diff)
+                {
+                    //Zeilenschleife:
+                    for (int i = 0; i < zeilen - ncounter; i++)
+                    {
+                        xneu[i] = 0;
+
+                        //Spaltenschleifen:
+                        for (int j = 0; j < i; j++)
+                        {
+                            xneu[i] = xneu[i] + (Matrix[i][j] * xneu[j]);
+                        }
+                        for (int j = i + 1; j < zeilen-ncounter; j++)
+                        {
+                            xneu[i] = xneu[i] + (Matrix[i][j] * xstart[j]);
+                        }
+                        xneu[i] = (Vector[i] - xneu[i]) / Matrix[i][i];
+                    }
+
+                }
+
+                //Berechnung NormNeu&NormAlt:
+                for (int k = 0; k < zeilen - ncounter; k++)
+                {
+                    normNeu += abs(xneu[k] * xneu[k]);
+                    normAlt += abs(xstart[k] * xstart[k]);
+                }
+
+                //Berechnung Differenz:
+                diff = normNeu - normAlt;
+
+
+
+                for (int copy = 0; copy < zeilen-ncounter; copy++)
+                {
+                    xstart[copy] = xneu[copy];
+                }
+
+                schritte++;
+
+            }
+                for(int p = 0; p < zeilen - ncounter; p++)
+                {
+                    printf("%.10Lf\n", xneu[p]);
+                }
+                printf("schritte: %d",schritte);
+        }
 
 return 0;
 }
@@ -298,18 +386,18 @@ int countEintraege(FILE* fp){
            prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
        }
      }
-     return i;
+     return &i;
 
 }
 
 int getZeilen(int eintraege){
-    int zeilen = 0;
+    int *zeilen = 0;
     if (eintraege > 0){
         for (int i = 0; i<1000; i++)
-            if(eintraege == zeilen*(zeilen+1))
+            if(eintraege == *zeilen*(*zeilen+1))
                 break;
-            else zeilen++;
-        return zeilen;
+            else *zeilen++;
+        return &zeilen;
     }
     else return 0;
 }
