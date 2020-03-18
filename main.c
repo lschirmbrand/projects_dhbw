@@ -170,7 +170,6 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
 
 //tatsächliche matrix + vektor
     aNullZeilen /= 2;
-    const int  maxsteps = 10000;
 
     for(int vz = 0; vz<zeilen-aNullZeilen; vz++)
         b -> data[vz] = tempMatrix[vz][spalten-1];    //Vektor = tempMatrix-Matrix
@@ -211,7 +210,7 @@ int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
 
         for (int i = 0; i<zeilen-aNullZeilen; i++)
             printf("x%d = %.10Lf\n", i, xneu[i]); //Ausgabe
-        printf("Schritte: %d\n\nFehlerschranke: %d",schritt,e);
+        printf("Schritte: %d\n\n",schritt);
 
     }
     else if(method == GAUSS_SEIDEL){
