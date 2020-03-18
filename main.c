@@ -51,27 +51,48 @@ int main() {
     Matrix A;
     Vector b;
     Vector x;
-    double e = 0.000000000001;
-    Method m = JACOBI;
-    bool l = load(&A, &b, &x);
+    double e;
 
-    if(l){
-        printf("Datei erfolgreich geladen.\n\nWelches Verfahren?\nSchreibe '0' für Jacobi oder '1' für Gauß-Seidel: ");
-        int auswahl;
-        scanf("%d",&auswahl);
-        if(auswahl == 0) m = JACOBI;
-        else if(auswahl == 1) m = GAUSS_SEIDEL;
-        solve(m, &A, &b, &x, e);
-    }
-    else printf("Die Datei konnte nicht geladen werden.\n\n\n");
+    //e = 1e-10;
 
+    Method m;
+    //Titel
+    printf("\t ----------------------------\n\t|                            |\n\t|   LGS - Lösungsverfahren   |\n\t|    Jacobi / Gauß-Seidel    |\n\t|                            |\n\t ----------------------------\n\n");
+
+    bool gueltig = true;
+
+    do{
+        char filename[200] = "testdateien/";
+        char file[100];
+
+        printf("Dateipfad der .csv-Datei: %s", filename);
+        scanf("%s",&file);
+        strcat(filename, file);
+        gueltig = load(&filename, &A, &b, &x);
+        if(gueltig){
+            printf("Datei erfolgreich geladen.\n\n");
+            char auswahl;
+            do{
+                printf("Welches Verfahren?\nSchreibe '0' für Jacobi oder '1' für Gauß-Seidel: ");
+                scanf("%s",&auswahl);
+                if(auswahl == '0') m = JACOBI;
+                else if(auswahl == '1') m = GAUSS_SEIDEL;
+                else printf(" - Ungültige Eingabe -\n\n");
+            } while(auswahl != '0' && auswahl != '1');
+            printf("\nWie klein soll die Fehlerschranke sein? (Bsp. 10⁻¹⁰ = 1e-10): ");
+            scanf("%lf",&e);
+            solve(m, &A, &b, &x, e);
+            break;
+        }
+        else printf("Die Datei konnte nicht geladen werden.\n\n\n");
+    } while(!gueltig);
     return 0;
 }
 
-int load (Matrix *A, Vector *b, Vector *x){
+int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     //Datei öffnen
     FILE *fp;
-    fp = fopen("konv3.csv", "r");
+    fp = fopen(filename, "r");
     //wenn datei ungültig ist kann gleich aufgehört werden
     if (fp==NULL) return false;
 
@@ -165,10 +186,6 @@ int load (Matrix *A, Vector *b, Vector *x){
 int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
 
     int zeilen = A -> n, spalten = A -> n + 1, aNullZeilen=0;
-
-//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
-
-    //Berechnungansatz Jacobi-Verhalten
     double vorher[zeilen], nachher[zeilen], minDiff = 0, diff = 0;
     long double xneu[zeilen-aNullZeilen], xstart[zeilen-aNullZeilen];
     int schritt = 0, maxSchritte = 100;
@@ -177,84 +194,64 @@ int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
         do{
             for(int i = 0; i < zeilen-aNullZeilen; i++)
                 xneu[i] = b-> data[i];
-            for(int i = 0;i<zeilen-aNullZeilen; i++)
-            {
+            for(int i = 0;i<zeilen-aNullZeilen; i++){
                 for(int j = 0;j<zeilen-aNullZeilen; j++)
                     if(i!=j)
                          xneu[i] = xneu[i]-A->data[i][j]*xstart[j];
                 xneu[i] = xneu[i]/A->data[i][i];
             }
-            for(int i = 0; i < zeilen-aNullZeilen; i++)
-            {
-                xstart[i] = xneu[i];
-                vorher[i] = nachher[i];
-                nachher[i] = xstart[i];
-                double diff = vorher[i] - nachher[i];
+            for(int i = 0; i < zeilen-aNullZeilen; i++){
+                double diff = xstart[i] - xneu[i];
                 if(diff < 0) diff = diff * (-1);        // differenz zwischen vorher nachher
                 if(diff < minDiff || schritt == 0) minDiff = diff;
+                xstart[i] = xneu[i];
             }
             schritt++;
-        }while(minDiff > e || schritt > maxSchritte);
+        }while(minDiff > e && schritt < maxSchritte);
 
         for (int i = 0; i<zeilen-aNullZeilen; i++)
-            printf("x%d = %.10Lf\n", i, nachher[i]); //Ausgabe
-        printf("Schritte: %d\n\n",schritt);
+            printf("x%d = %.10Lf\n", i, xneu[i]); //Ausgabe
+        printf("Schritte: %d\n\nFehlerschranke: %d",schritt,e);
+
     }
-
-
-
-
     else if(method == GAUSS_SEIDEL){
-
-
-//--------------------------------------------------------//--------------------------------------------------------//--------------------------------------------------------
-        //Berechnungsansatz Gauß Seidel Verfahren
-
-       //Iterationsschleife bis Konvergenz erreicht:
        double normNeu;
        double normAlt;
 
-       do{
-                /* Normwerte := 0 damit Differenz bei jedem
-                 * neuen Schritt neu berechnet werden kann:*/
-                normNeu = 0;
-                normAlt = 0;
-                    //Zeilenschleife:
-                    for (int i = 0; i < zeilen - aNullZeilen; i++)
-                    {
-                        xneu[i] = 0;
-                        //Spaltenschleifen:
-                        for (int j = 0; j < i; j++)
-                            xneu[i] = xneu[i] + (A->data[i][j] * xneu[j]);
-                        for (int j = i + 1; j < zeilen-aNullZeilen; j++)
-                            xneu[i] = xneu[i] + (A->data[i][j] * xstart[j]);
-                        xneu[i] = (b->data[i] - xneu[i]) / A->data[i][i];
-                    }
-                //Berechnung NormNeu&NormAlt:
-                for (int k = 0; k < zeilen - aNullZeilen; k++)
-                {
-                    normNeu += abs(xneu[k] * xneu[k]);
-                    normAlt += abs(xstart[k] * xstart[k]);
+        do{
+            /* Normwerte := 0 damit Differenz bei jedem
+             * neuen Schritt neu berechnet werden kann:*/
+            normNeu = 0;
+            normAlt = 0;
+                //Zeilenschleife:
+                for (int i = 0; i < zeilen - aNullZeilen; i++){
+                    xneu[i] = 0;
+                    //Spaltenschleifen:
+                    for (int j = 0; j < i; j++)
+                        xneu[i] = xneu[i] + (A->data[i][j] * xneu[j]);
+                    for (int j = i + 1; j < zeilen-aNullZeilen; j++)
+                        xneu[i] = xneu[i] + (A->data[i][j] * xstart[j]);
+                    xneu[i] = (b->data[i] - xneu[i]) / A->data[i][i];
                 }
-
-    //fehlt noch implementierung von fehlerschranke
-
-                for (int copy = 0; copy < zeilen-aNullZeilen; copy++)
-                    xstart[copy] = xneu[copy];
-
-                schritt++;
-
-            }while(schritt < maxSchritte);
+            //Berechnung NormNeu&NormAlt:
+            for (int i = 0; i < zeilen - aNullZeilen; i++){
+                normNeu += abs(xneu[i] * xneu[i]);
+                normAlt += abs(xstart[i] * xstart[i]);
+            }
+            for (int i = 0; i < zeilen-aNullZeilen; i++){
+                double diff = xstart[i] - xneu[i];
+                if(diff < 0) diff = diff * (-1);        // differenz zwischen vorher nachher
+                if(diff < minDiff || schritt == 0) minDiff = diff;
+                xstart[i] = xneu[i];
+            }
+            schritt++;
+            }while(minDiff > e && schritt < maxSchritte);
         for(int p = 0; p < zeilen - aNullZeilen; p++)
-            printf("x%d = %.10Lf\n",p, nachher[p]);
-        printf("schritte: %d",schritt);
+            printf("x%d = %.10Lf\n",p, xneu[p]);
+        printf("schritte: %d\n\n",schritt);
     }
-
-
-
     return 0;
 }
-
 
 int countEintraege(){
     FILE *fp;
