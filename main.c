@@ -27,6 +27,10 @@ Danach wird die (neue&richtige) Matrix mit allen Werten der tempMatrix von 0<=x<
 Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder ohne Nullzeilen, deklariert.
 */
 
+//
+//  Vorwort muss evtl noch überarbeitet werden
+//
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -56,8 +60,8 @@ int countEintraege(const char filename[]){
     fseek(fp, 0, SEEK_SET);
         //solange Dateiende nicht erreicht
     while((c = fgetc(fp)) != EOF) {
-       if ((c == '\n' && prevcharbreak == false)|| c == ',') i++;   //if c = Zeilenumbruch oder Komma
-       if (c =='\r') {//if c = Zeilenumbruch oder Komma
+       if((c == '\n' && prevcharbreak == false)|| c == ',') i++;   //if c = Zeilenumbruch oder Komma
+       if(c =='\r'){//if c = Zeilenumbruch oder Komma
            i++;
            prevcharbreak = true; //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
        }
@@ -85,23 +89,12 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     //wenn datei ungültig ist kann gleich aufgehört werden
     if (fp == NULL) return false;
 
-//zählen der enträge
+    //zählen der enträge
     int eintraege = countEintraege(filename);
     printf("Eintraege:\t%d\n", eintraege);
-//ermitteln wie viele zeilen und spalten
+    //ermitteln wie viele zeilen und spalten
     int zeilen = getZeilen(eintraege), spalten = zeilen+1;
     printf("Zeilen:\t\t%d\nSpalten:\t%d\n", zeilen, spalten);
-
-    // Matrix und Vektoren bekommen anzahl ihrer Daten und Zeilen
-    A -> data = (double**)malloc(sizeof(double*) * zeilen);
-    for(int x = 0; x < zeilen; x++)
-        A -> data[x] = (double*)calloc(zeilen, sizeof(double));
-    b -> data = (double*)malloc(sizeof(double*) * zeilen);
-    x -> data = (double*)malloc(sizeof(double*) * zeilen);
-    A -> n = zeilen;
-    b -> n = zeilen;
-    x -> n = zeilen;
-
 
     char numberstring[30]; // numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
     long double number = 0; // number, hat Wert der einzelnen Zellen der Matrix
@@ -111,10 +104,10 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     int iSpalte = 0, iZeile = 0, aNullZeilen = 0;
     fseek(fp, 0, SEEK_SET); //Dateizeiger auf Anfang setzen
     char c;
-    while((c=fgetc(fp)) != EOF) { //bis Dateiende erreicht wird
+    while((c=fgetc(fp)) != EOF){ //bis Dateiende erreicht wird
         temp = c;
         //falls Zeilenumsprung gelesen wird
-        if (c == '\n'||c=='\r') {
+        if (c == '\n'||c=='\r'){
             temp = '\0';
             strncat(numberstring, &temp, 1); //CharArray wird verkettet
             number = strtold(numberstring,'\0'); //Numbertostring wird zu double konvertiert und in Number gespeichert
@@ -124,7 +117,7 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
             numberstring[0] = '\0'; //CharArray wieder auf Anfang
         }
         //Falls Komma gelesen wird
-        else if (c == ',') {
+        else if (c == ','){
             temp = '\0';
             strncat(numberstring, &temp, 1); //CharArray wird verkettet
             number = strtold(numberstring,'\0'); //Numbertostring wird zu double konvertiert und in Number gespeichert
@@ -135,14 +128,15 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
         //Wenn kein Zeilenumbruch oder Komma gelesen wird -> Zahl wird als Char eingelesen
         else strncat(numberstring, &temp, 1); //Verkettung zu CharArray/String
     }
-//nullzeilen löschen
+    fclose(fp);
+    //nullzeilen löschen
     for (int z = 0; z < zeilen; z++)
-        for (int i = 0; i < spalten; i++)
-            if(tempMatrix[z][i] != 0) break; //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
-            else if (i == spalten - 1 && tempMatrix[z][i] == 0){ //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
+        for (int s = 0; s < spalten; s++)
+            if(tempMatrix[z][s] != 0) break; //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
+            else if (s == spalten - 1 && tempMatrix[z][s] == 0){ //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
                 aNullZeilen++;
                 //Elemente werden verschoben
-                for(int zv = z; zv < zeilen - 1; zv++)
+                for(int zv = s; zv < zeilen - 1; zv++)
                     for(int sv = 0; sv < spalten; sv++)
                         //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
                         tempMatrix[zv][sv] = tempMatrix[zv+1][sv];
@@ -150,70 +144,69 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
                     //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
                     tempMatrix[zeilen-1][nz] = 0;
             }
-//tatsächliche matrix + vektor
-    aNullZeilen /= 2;
-    for(int vz = 0; vz < zeilen - aNullZeilen; vz++)
-        //Vektor besteht aus allen Werten in der letzten Spalte
-        b -> data[vz] = tempMatrix[vz][spalten-1];
-    for(int mz = 0; mz < zeilen - aNullZeilen; mz++)
-        //Matrix besteht aus allen Werten ohne die letzte Spalte
-        for(int ms = 0; ms < spalten -1; ms++)
-            A -> data[mz][ms] = tempMatrix[mz][ms];
     printf("Nullzeilen:\t%d\n\n\n", aNullZeilen);
-    fclose(fp);
+    zeilen -= aNullZeilen;
+
+    // Matrix und Vektoren bekommen anzahl ihrer Daten und Zeilen
+    A -> data = (double**)malloc(sizeof(double*) * zeilen);
+    for(int x = 0; x < zeilen; x++)
+        A -> data[x] = (double*)calloc(zeilen, sizeof(double));
+    b -> data = (double*)malloc(sizeof(double*) * zeilen);
+    x -> data = (double*)malloc(sizeof(double*) * zeilen);
+    A -> n = zeilen;
+    b -> n = zeilen;
+    x -> n = zeilen;
+    // Matrix und Vektoren bekommen ihre Werte
+    for(int az = 0; az < zeilen; az++)
+        //Matrix besteht aus allen Werten ohne die letzte Spalte
+        for(int as = 0; as < spalten -1; as++)
+            A -> data[az][as] = tempMatrix[az][as];
+    for(int bz = 0; bz < zeilen; bz++)
+        //Vektor besteht aus allen Werten in der letzten Spalte
+        b -> data[bz] = tempMatrix[bz][spalten-1];
     return true;
 }
 
 void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
     int schritt = 0, maxSchritte = 100;
+    //Neuer Vektor zum Vergleich des neuen und alten Wertes
     Vector xAlt;
     xAlt.n = x -> n;
     xAlt.data = (double*)malloc(sizeof(double*) * x -> n);
     double diff = 0;
 
-    if(method == JACOBI){
+    if(method == JACOBI)
         do{// solange bis zum letzten wert kleiner oder gleich Fehlerschranke ist
-            //Algorithmus - (Quelle: Pseudocode auf Wikipedia)
+            //Algorithmus - (siehe Pseudocode auf Wikipedia)
             for(int i = 0; i < x -> n; i++){
                 x -> data[i] = b -> data[i];
                 for(int j = 0; j < x -> n; j++)
-                    if(i != j)
-                         x -> data[i] = x -> data[i] - A -> data[i][j] * xAlt.data[j];
-                x -> data[i] = x -> data[i] / A -> data[i][i];
+                    if(j != i)
+                         x -> data[i] -= A -> data[i][j] * xAlt.data[j];
+                x -> data[i] /= A -> data[i][i];
             }
+            //Überprüfung ob Differenz kleiner als die Fehlerschranke ist
+            for(int i = 0; i < x -> n; i++){
+                //Berechnung der kleinsten Differenz zwischen x und xAlt
+                diff = xAlt.data[i] - x -> data[i];
+                if(diff < 0) diff = diff * (-1); //Betrag der Differenz
+                //Wenn die Differenz von einem der Werte des Vektors x kleiner oder gleich zur Fehlerschrankeist, kann aufgehört werden
+                if(diff <= e) break;
+                xAlt.data[i] = x -> data[i];
+            }
+            schritt++;
+        } while(diff > e && schritt < maxSchritte);
 
-            //Überprüfung ob Differenz kleiner als die Fehlerschranke ist
-            for(int i = 0; i < x -> n; i++){
-                //Berechnung der kleinsten Differenz zwischen x und xAlt
-                diff = xAlt.data[i] - x -> data[i];
-                if(diff < 0) diff = diff * (-1); //Betrag der Differenz
-                //Wenn die Differenz von einem der Werte des Vektors x kleiner oder gleich zur Fehlerschrankeist, kann aufgehört werden
-                if(diff <= e) break;
-                xAlt.data[i] = x -> data[i];
-            }
-            schritt++;
-        }while(diff > e && schritt < maxSchritte);
-    }
-    else if(method == GAUSS_SEIDEL){
-        //Normwerte := 0 damit Differenz bei jedem neuen Schritt neu berechnet werden kann:
-        double normNeu, normAlt;
-        do{
-            normNeu = 0;
-            normAlt = 0;
-                //Zeilenschleife:
-                for (int i = 0; i < x -> n; i++){
-                    x -> data[i] = 0;
-                    //Spaltenschleifen:
-                    for (int j = 0; j < i; j++)
-                        x -> data[i] = x -> data[i] + (A->data[i][j] * x -> data[j]);
-                    for (int j = i + 1; j < x -> n; j++)
-                        x -> data[i] = x -> data[i] + (A->data[i][j] * xAlt.data[j]);
-                    x -> data[i] = (b->data[i] - x -> data[i]) / A->data[i][i];
-                }
-            //Berechnung NormNeu&NormAlt:
-            for (int i = 0; i < x -> n; i++){
-                normNeu += abs(x -> data[i] * x -> data[i]);
-                normAlt += abs(xAlt.data[i] * xAlt.data[i]);
+    else if(method == GAUSS_SEIDEL)
+        do{// solange bis zum letzten wert kleiner oder gleich Fehlerschranke ist
+            //Algorithmus - (siehe Pseudocode auf Wikipedia)
+            for (int k = 0; k < x -> n; k++){
+                x -> data[k] = 0;
+                for (int j = 0; j < k; j++)
+                    x -> data[k] += (A -> data[k][j] * x -> data[j]);
+                for (int j = k + 1; j < x -> n; j++)
+                    x -> data[k] += (A -> data[k][j] * xAlt.data[j]);
+                x -> data[k] = (b->data[k] - x -> data[k]) / A->data[k][k];
             }
             //Überprüfung ob Differenz kleiner als die Fehlerschranke ist
             for(int i = 0; i < x -> n; i++){
@@ -225,8 +218,7 @@ void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
                 xAlt.data[i] = x -> data[i];
             }
             schritt++;
-            }while(diff > e && schritt < maxSchritte);
-    }
+        } while(diff > e && schritt < maxSchritte);
     printf("Nach %d Schritten:\n\n",schritt);
 }
 
@@ -249,8 +241,7 @@ int main() {
         if(gueltig){
             printf("Datei erfolgreich geladen.\n\n");
             char auswahl;
-            do{
-                //Fragt Anwender nach Verfahren
+            do{//Fragt Anwender nach Verfahren
                 printf("Welches Verfahren?\nSchreibe '0' für Jacobi oder '1' für Gauß-Seidel: ");
                 scanf("%s",&auswahl);
                 if(auswahl == '0') m = JACOBI;
