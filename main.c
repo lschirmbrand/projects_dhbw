@@ -52,19 +52,21 @@ int countEintraege(const char filename[]){
     int i = 0;
     char c;
     bool prevcharbreak = false;
-    fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
-    while((c = fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
+        //Dateizeiger auf Anfang setzen
+    fseek(fp, 0, SEEK_SET);
+        //solange Dateiende nicht erreicht
+    while((c = fgetc(fp)) != EOF) {
        if ((c == '\n' && prevcharbreak == false)|| c == ',') i++;   //if c = Zeilenumbruch oder Komma
-       if (c =='\r') {                          //if c = Zeilenumbruch oder Komma
+       if (c =='\r') {//if c = Zeilenumbruch oder Komma
            i++;
-           prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
+           prevcharbreak = true; //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
        }
     }
     fclose(fp);
     return i;
 }
 
-int getZeilen(int eintraege){
+int getZeilen(int eintraege){//zählt anzahl der Zeilen
     int zeilen = 0;
     if (eintraege > 0){
         for (int i = 0; i<1000; i++)
@@ -83,11 +85,6 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     //wenn datei ungültig ist kann gleich aufgehört werden
     if (fp == NULL) return false;
 
-    char numberstring[30];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
-    long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
-    char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
-    numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
-
 //zählen der enträge
     int eintraege = countEintraege(filename);
     printf("Eintraege:\t%d\n", eintraege);
@@ -95,6 +92,7 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     int zeilen = getZeilen(eintraege), spalten = zeilen+1;
     printf("Zeilen:\t\t%d\nSpalten:\t%d\n", zeilen, spalten);
 
+    // Matrix und Vektoren bekommen anzahl ihrer Daten und Zeilen
     A -> data = (double**)malloc(sizeof(double*) * zeilen);
     for(int x = 0; x < zeilen; x++)
         A -> data[x] = (double*)calloc(zeilen, sizeof(double));
@@ -104,51 +102,63 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     b -> n = zeilen;
     x -> n = zeilen;
 
-    long double tempMatrix[zeilen][spalten];
+
+    char numberstring[30]; // numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
+    long double number = 0; // number, hat Wert der einzelnen Zellen der Matrix
+    char temp = 0; //temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
+    numberstring[0] = '\0'; //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
+    long double tempMatrix[zeilen][spalten]; //Temporäre Matrix, enthält noch nullzeilen und den vektor b
     int iSpalte = 0, iZeile = 0, aNullZeilen = 0;
-    fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
+    fseek(fp, 0, SEEK_SET); //Dateizeiger auf Anfang setzen
     char c;
-    while((c=fgetc(fp)) != EOF) {                   //Schleife, s.o
+    while((c=fgetc(fp)) != EOF) { //bis Dateiende erreicht wird
         temp = c;
-        if (c == '\n'||c=='\r') {                   //falls Zeilenumsprung gelesen wird
+        //falls Zeilenumsprung gelesen wird
+        if (c == '\n'||c=='\r') {
             temp = '\0';
-            strncat(numberstring, &temp, 1);        //CharArray wird verkettet
-            number = strtold(numberstring,'\0');    //Numbertostring wird zu double konvertiert und in Number gespeichert
+            strncat(numberstring, &temp, 1); //CharArray wird verkettet
+            number = strtold(numberstring,'\0'); //Numbertostring wird zu double konvertiert und in Number gespeichert
             tempMatrix[iZeile][iSpalte] = number;
-            iZeile++;                                   //Sprung in nächste Zeile
-            iSpalte = 0;                                 //Spalte wird wieder auf 0 gesetzt
-            numberstring[0] = '\0';                 //CharArray wird gecleared
+            iZeile++; //nächste Zeile
+            iSpalte = 0; //erste Spalte
+            numberstring[0] = '\0'; //CharArray wieder auf Anfang
         }
-        if (c == ',') {                             //Falls Komma gelesen wird
+        //Falls Komma gelesen wird
+        else if (c == ',') {
             temp = '\0';
-            strncat(numberstring, &temp, 1);        //CharArray wird verkettet
-            number = strtold(numberstring,'\0');    //Numbertostring wird zu double konvertiert und in Number gespeichert
+            strncat(numberstring, &temp, 1); //CharArray wird verkettet
+            number = strtold(numberstring,'\0'); //Numbertostring wird zu double konvertiert und in Number gespeichert
             tempMatrix[iZeile][iSpalte] = number;
-            iSpalte++;                                   //Spalte wird um eins erhöht, also nach rechts geschoben
-            numberstring[0] = '\0';                 //CharArray wird gecleared
+            iSpalte++; //nächste Spalte
+            numberstring[0] = '\0'; //CharArray wieder auf Anfang
         }
-        if (c!='\n' && c != ',' && c != '\r')      //Wenn kein Zeilenumbruch oder Komma gelesen wird -> Zahl wird als Char eingelesen
-            strncat(numberstring, &temp, 1);        //Verkettung zu CharArray/String
+        //Wenn kein Zeilenumbruch oder Komma gelesen wird -> Zahl wird als Char eingelesen
+        else strncat(numberstring, &temp, 1); //Verkettung zu CharArray/String
     }
 //nullzeilen löschen
     for (int z = 0; z < zeilen; z++)
         for (int i = 0; i < spalten; i++)
-            if(tempMatrix[z][i] != 0) break;                //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
-            else if (i == spalten - 1 && tempMatrix[z][i] == 0){      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
-                aNullZeilen++;                             //Protokolierung der Nullzeilen
-                for(int zv = z; zv < zeilen - 1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
-                    for(int sv = 0; sv < spalten; sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
-                        tempMatrix[zv][sv] = tempMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
+            if(tempMatrix[z][i] != 0) break; //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
+            else if (i == spalten - 1 && tempMatrix[z][i] == 0){ //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
+                aNullZeilen++;
+                //Elemente werden verschoben
+                for(int zv = z; zv < zeilen - 1; zv++)
+                    for(int sv = 0; sv < spalten; sv++)
+                        //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
+                        tempMatrix[zv][sv] = tempMatrix[zv+1][sv];
                 for(int nz = 0; nz < spalten;nz++)
-                    tempMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
+                    //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
+                    tempMatrix[zeilen-1][nz] = 0;
             }
 //tatsächliche matrix + vektor
     aNullZeilen /= 2;
     for(int vz = 0; vz < zeilen - aNullZeilen; vz++)
-        b -> data[vz] = tempMatrix[vz][spalten-1];    //Vektor = tempMatrix-Matrix
+        //Vektor besteht aus allen Werten in der letzten Spalte
+        b -> data[vz] = tempMatrix[vz][spalten-1];
     for(int mz = 0; mz < zeilen - aNullZeilen; mz++)
+        //Matrix besteht aus allen Werten ohne die letzte Spalte
         for(int ms = 0; ms < spalten -1; ms++)
-            A -> data[mz][ms] = tempMatrix[mz][ms];     //Quadratische Matrix = tempMatrix -Vektor
+            A -> data[mz][ms] = tempMatrix[mz][ms];
     printf("Nullzeilen:\t%d\n\n\n", aNullZeilen);
     fclose(fp);
     return true;
@@ -223,24 +233,30 @@ int main() {
     printf("\t ----------------------------\n\t|                            |\n\t|   LGS - Lösungsverfahren   |\n\t|    Jacobi / Gauß-Seidel    |\n\t|                            |\n\t ----------------------------\n\n");
     bool gueltig;
     do{
+        //Fragt Anwender nach .csv-Datei
         char filename[100];
         printf("Dateipfad der .csv-Datei: ");
         scanf("%s",filename);
+        //wenn Datei ungültig, wird do-while-Schleife wieder wiederholt
         gueltig = load(filename, &A, &b, &x);
         if(gueltig){
             printf("Datei erfolgreich geladen.\n\n");
             char auswahl;
             do{
+                //Fragt Anwender nach Verfahren
                 printf("Welches Verfahren?\nSchreibe '0' für Jacobi oder '1' für Gauß-Seidel: ");
                 scanf("%s",&auswahl);
                 if(auswahl == '0') m = JACOBI;
                 else if(auswahl == '1') m = GAUSS_SEIDEL;
                 else printf(" - Ungültige Eingabe -\n\n");
+            // Wenn Anwender etwas anderes als '0' oder '1' eingibt, wird er erneut nach Verfahren gefragt
             } while(auswahl != '0' && auswahl != '1');
+            //Frage nach Fehlerschranke
             printf("\nWie klein soll die Fehlerschranke sein? (Bsp. 10⁻¹⁰ = 1e-10): ");
             scanf("%lf",&e);
             printf("\n");
             solve(m, &A, &b, &x, e);
+            //Ausgabe des Vektors x
             for (int i = 0; i < x.n;i++)
                 printf("\tx%d = %f\n", i+1, x.data[i]);
             break;
