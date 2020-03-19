@@ -46,9 +46,9 @@ typedef enum{
     JACOBI = 0, GAUSS_SEIDEL = 1
 } Method;
 
-int countEintraege(){
+int countEintraege(const char filename[]){
     FILE *fp;
-    fp = fopen("testdateien/konv3.csv", "r");
+    fp = fopen(filename, "r");
     int i = 0;
     char c;
     bool prevcharbreak = false;
@@ -91,7 +91,7 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
 
 //zählen der enträge
-    int eintraege = countEintraege(&fp);
+    int eintraege = countEintraege(filename);
     printf("Eintraege:\t%d\n", eintraege);
 //ermitteln wie viele zeilen und spalten
     int zeilen = getZeilen(eintraege), spalten = zeilen+1;
