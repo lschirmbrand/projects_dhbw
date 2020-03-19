@@ -60,10 +60,8 @@ int countEintraege(const char filename[]){
            prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
        }
     }
-
     fclose(fp);
     return i;
-
 }
 
 int getZeilen(int eintraege){
@@ -225,11 +223,9 @@ int main() {
     printf("\t ----------------------------\n\t|                            |\n\t|   LGS - Lösungsverfahren   |\n\t|    Jacobi / Gauß-Seidel    |\n\t|                            |\n\t ----------------------------\n\n");
     bool gueltig;
     do{
-        char filename[200] = "testdateien/";
-        char file[100];
-        printf("Dateipfad der .csv-Datei: %s", filename);
-        scanf("%s",file);
-        strcat(filename, file);
+        char filename[100];
+        printf("Dateipfad der .csv-Datei: ");
+        scanf("%s",filename);
         gueltig = load(filename, &A, &b, &x);
         if(gueltig){
             printf("Datei erfolgreich geladen.\n\n");
