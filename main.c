@@ -53,9 +53,9 @@ int countEintraege(){
     char c;
     bool prevcharbreak = false;
     fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
-    while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
-       if ((c == '\n' && prevcharbreak==false)|| c == ',') i++;   //if c = Zeilenumbruch oder Komma
-       if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
+    while((c = fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
+       if ((c == '\n' && prevcharbreak == false)|| c == ',') i++;   //if c = Zeilenumbruch oder Komma
+       if (c =='\r') {                          //if c = Zeilenumbruch oder Komma
            i++;
            prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
        }
@@ -70,7 +70,7 @@ int getZeilen(int eintraege){
     int zeilen = 0;
     if (eintraege > 0){
         for (int i = 0; i<1000; i++)
-            if(eintraege == zeilen*(zeilen+1))
+            if(eintraege == zeilen * (zeilen + 1))
                 break;
             else zeilen++;
         return zeilen;
@@ -83,7 +83,7 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     FILE *fp;
     fp = fopen(filename, "r");
     //wenn datei ungültig ist kann gleich aufgehört werden
-    if (fp==NULL) return false;
+    if (fp == NULL) return false;
 
     char numberstring[30];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
     long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
@@ -133,81 +133,81 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
             strncat(numberstring, &temp, 1);        //Verkettung zu CharArray/String
     }
 //nullzeilen löschen
-    for (int z = 0; z<zeilen; z++)
-        for (int i = 0; i<spalten; i++)
-            if(tempMatrix[z][i]!=0) break;                //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
-            else if (i==spalten-1 && tempMatrix[z][i] == 0){      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
+    for (int z = 0; z < zeilen; z++)
+        for (int i = 0; i < spalten; i++)
+            if(tempMatrix[z][i] != 0) break;                //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
+            else if (i == spalten - 1 && tempMatrix[z][i] == 0){      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
                 aNullZeilen++;                             //Protokolierung der Nullzeilen
-                for(int zv=z; zv<zeilen-1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
-                    for(int sv = 0; sv<spalten;sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
-                        tempMatrix[zv][sv]=tempMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
-                for(int nz = 0; nz<spalten;nz++)
+                for(int zv = z; zv < zeilen - 1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
+                    for(int sv = 0; sv < spalten; sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
+                        tempMatrix[zv][sv] = tempMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
+                for(int nz = 0; nz < spalten;nz++)
                     tempMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
             }
 //tatsächliche matrix + vektor
     aNullZeilen /= 2;
-    for(int vz = 0; vz<zeilen-aNullZeilen; vz++)
+    for(int vz = 0; vz < zeilen - aNullZeilen; vz++)
         b -> data[vz] = tempMatrix[vz][spalten-1];    //Vektor = tempMatrix-Matrix
-    for(int mz=0; mz<zeilen-aNullZeilen; mz++)
-        for(int ms=0; ms<spalten-1; ms++)
-            A -> data[mz][ms]=tempMatrix[mz][ms];     //Quadratische Matrix = tempMatrix -Vektor
+    for(int mz = 0; mz < zeilen - aNullZeilen; mz++)
+        for(int ms = 0; ms < spalten -1; ms++)
+            A -> data[mz][ms] = tempMatrix[mz][ms];     //Quadratische Matrix = tempMatrix -Vektor
     printf("Nullzeilen:\t%d\n\n\n", aNullZeilen);
     fclose(fp);
     return true;
 }
 
 void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
-    int zeilen = A -> n, aNullZeilen=0;
-    double minDiff = 0, xneu[zeilen-aNullZeilen], xstart[zeilen-aNullZeilen];
-    int schritt = 0, maxSchritte = 100;
+    int zeilen = A -> n, aNullZeilen = 0, schritt = 0, maxSchritte = 100;
+    Vector xAlt;
+    xAlt.n = zeilen;
+    xAlt.data = (double*)malloc(sizeof(double*) * zeilen);
+    double minDiff = 0;
+
     if(method == JACOBI){
         do{
-            for(int i = 0; i < zeilen-aNullZeilen; i++)
-                xneu[i] = b-> data[i];
-            for(int i = 0;i<zeilen-aNullZeilen; i++){
-                for(int j = 0;j<zeilen-aNullZeilen; j++)
-                    if(i!=j)
-                         xneu[i] = xneu[i]-A->data[i][j]*xstart[j];
-                xneu[i] = xneu[i]/A->data[i][i];
+            for(int i = 0; i < zeilen - aNullZeilen; i++)
+                x -> data[i] = b -> data[i];
+            for(int i = 0;i<zeilen - aNullZeilen; i++){
+                for(int j = 0;j < zeilen-aNullZeilen; j++)
+                    if(i != j)
+                         x -> data[i] = x -> data[i] - A -> data[i][j] * xAlt.data[j];
+                x -> data[i] = x -> data[i] / A -> data[i][i];
             }
-            for(int i = 0; i < zeilen-aNullZeilen; i++){
-                double diff = xstart[i] - xneu[i];
+            for(int i = 0; i < zeilen - aNullZeilen; i++){
+                double diff = xAlt.data[i] - x -> data[i];
                 if(diff < 0) diff = diff * (-1);
                 if(diff < minDiff || schritt == 0) minDiff = diff;
-                xstart[i] = xneu[i];
-                x -> data[i] = xneu[i];
+                xAlt.data[i] = x -> data[i];
             }
             schritt++;
         }while(minDiff > e && schritt < maxSchritte);
     }
     else if(method == GAUSS_SEIDEL){
+        //Normwerte := 0 damit Differenz bei jedem neuen Schritt neu berechnet werden kann:
         double normNeu, normAlt;
         do{
-            /* Normwerte := 0 damit Differenz bei jedem
-             * neuen Schritt neu berechnet werden kann:*/
             normNeu = 0;
             normAlt = 0;
                 //Zeilenschleife:
                 for (int i = 0; i < zeilen - aNullZeilen; i++){
-                    xneu[i] = 0;
+                    x -> data[i] = 0;
                     //Spaltenschleifen:
                     for (int j = 0; j < i; j++)
-                        xneu[i] = xneu[i] + (A->data[i][j] * xneu[j]);
+                        x -> data[i] = x -> data[i] + (A->data[i][j] * x -> data[j]);
                     for (int j = i + 1; j < zeilen-aNullZeilen; j++)
-                        xneu[i] = xneu[i] + (A->data[i][j] * xstart[j]);
-                    xneu[i] = (b->data[i] - xneu[i]) / A->data[i][i];
+                        x -> data[i] = x -> data[i] + (A->data[i][j] * xAlt.data[j]);
+                    x -> data[i] = (b->data[i] - x -> data[i]) / A->data[i][i];
                 }
             //Berechnung NormNeu&NormAlt:
             for (int i = 0; i < zeilen - aNullZeilen; i++){
-                normNeu += abs(xneu[i] * xneu[i]);
-                normAlt += abs(xstart[i] * xstart[i]);
+                normNeu += abs(x -> data[i] * x -> data[i]);
+                normAlt += abs(xAlt.data[i] * xAlt.data[i]);
             }
             for (int i = 0; i < zeilen-aNullZeilen; i++){
-                double diff = xstart[i] - xneu[i];
-                if(diff < 0) diff = diff * (-1);
+                double diff = xAlt.data[i] - x -> data[i];
+                if(diff < 0) diff *= (-1);
                 if(diff < minDiff || schritt == 0) minDiff = diff;
-                xstart[i] = xneu[i];
-                x -> data[i] = xneu[i];
+                xAlt.data[i] = x -> data[i];
             }
             schritt++;
             }while(minDiff > e && schritt < maxSchritte);
