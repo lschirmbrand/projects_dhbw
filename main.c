@@ -32,61 +32,50 @@ Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder oh
 #include <stdlib.h>
 #include <string.h>
 
-typedef struct
-{
+typedef struct{
     int n;
     double **data;
 } Matrix;
-typedef struct
-{
+
+typedef struct{
     int n;
     double *data;
 } Vector;
-typedef enum
-{
+
+typedef enum{
     JACOBI = 0, GAUSS_SEIDEL = 1
 } Method;
 
-int main() {
-    Matrix A;
-    Vector b;
-    Vector x;
-    double e;
+int countEintraege(){
+    FILE *fp;
+    fp = fopen("testdateien/konv3.csv", "r");
+    int i = 0;
+    char c;
+    bool prevcharbreak = false;
+    fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
+    while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
+       if ((c == '\n' && prevcharbreak==false)|| c == ',') i++;   //if c = Zeilenumbruch oder Komma
+       if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
+           i++;
+           prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
+       }
+    }
 
-    //e = 1e-10;
+    fclose(fp);
+    return i;
 
-    Method m;
-    //Titel
-    printf("\t ----------------------------\n\t|                            |\n\t|   LGS - Lösungsverfahren   |\n\t|    Jacobi / Gauß-Seidel    |\n\t|                            |\n\t ----------------------------\n\n");
+}
 
-    bool gueltig = true;
-
-    do{
-        char filename[200] = "testdateien/";
-        char file[100];
-
-        printf("Dateipfad der .csv-Datei: %s", filename);
-        scanf("%s",&file);
-        strcat(filename, file);
-        gueltig = load(&filename, &A, &b, &x);
-        if(gueltig){
-            printf("Datei erfolgreich geladen.\n\n");
-            char auswahl;
-            do{
-                printf("Welches Verfahren?\nSchreibe '0' für Jacobi oder '1' für Gauß-Seidel: ");
-                scanf("%s",&auswahl);
-                if(auswahl == '0') m = JACOBI;
-                else if(auswahl == '1') m = GAUSS_SEIDEL;
-                else printf(" - Ungültige Eingabe -\n\n");
-            } while(auswahl != '0' && auswahl != '1');
-            printf("\nWie klein soll die Fehlerschranke sein? (Bsp. 10⁻¹⁰ = 1e-10): ");
-            scanf("%lf",&e);
-            solve(m, &A, &b, &x, e);
-            break;
-        }
-        else printf("Die Datei konnte nicht geladen werden.\n\n\n");
-    } while(!gueltig);
-    return 0;
+int getZeilen(int eintraege){
+    int zeilen = 0;
+    if (eintraege > 0){
+        for (int i = 0; i<1000; i++)
+            if(eintraege == zeilen*(zeilen+1))
+                break;
+            else zeilen++;
+        return zeilen;
+    }
+    else return 0;
 }
 
 int load (const char *filename, Matrix *A, Vector *b, Vector *x){
@@ -96,8 +85,7 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     //wenn datei ungültig ist kann gleich aufgehört werden
     if (fp==NULL) return false;
 
-    const int length = 30;
-    char numberstring[length];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
+    char numberstring[30];              //Einführung numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
     long double number = 0;                 //Einführung number, hat Wert der einzelnen Zellen der Matrix
     char temp = 0;                          //Einführung temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
     numberstring[0] = '\0';                 //Das CharArray wird leer initialisiert, die terminierende 0 am steht am Ende
@@ -109,18 +97,16 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     int zeilen = getZeilen(eintraege), spalten = zeilen+1;
     printf("Zeilen:\t\t%d\nSpalten:\t%d\n", zeilen, spalten);
 
-
     A -> data = (double**)malloc(sizeof(double*) * zeilen);
-    for(int x = 0; x < zeilen; x++){
+    for(int x = 0; x < zeilen; x++)
         A -> data[x] = (double*)calloc(zeilen, sizeof(double));
-    }
     b -> data = (double*)malloc(sizeof(double*) * zeilen);
+    x -> data = (double*)malloc(sizeof(double*) * zeilen);
     A -> n = zeilen;
     b -> n = zeilen;
+    x -> n = zeilen;
 
     long double tempMatrix[zeilen][spalten];
-    tempMatrix[0][0] = '/0';
-
     int iSpalte = 0, iZeile = 0, aNullZeilen = 0;
     fseek(fp, 0, SEEK_SET);         //Dateizeiger auf Anfang setzen
     char c;
@@ -143,52 +129,37 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
             iSpalte++;                                   //Spalte wird um eins erhöht, also nach rechts geschoben
             numberstring[0] = '\0';                 //CharArray wird gecleared
         }
-        if (c!='\n' && c != ',' && c != '\r'){      //Wenn kein Zeilenumbruch oder Komma gelesen wird -> Zahl wird als Char eingelesen
+        if (c!='\n' && c != ',' && c != '\r')      //Wenn kein Zeilenumbruch oder Komma gelesen wird -> Zahl wird als Char eingelesen
             strncat(numberstring, &temp, 1);        //Verkettung zu CharArray/String
-        }
     }
-
 //nullzeilen löschen
-    for (int z = 0; z<zeilen; z++){
-        for (int i = 0; i<spalten; i++){
+    for (int z = 0; z<zeilen; z++)
+        for (int i = 0; i<spalten; i++)
             if(tempMatrix[z][i]!=0) break;                //sobald ein Zeichen !=0 gelesen wird , wird Suche der Zeile abgebrochen, kann keine Nullzeile sein
-            else{
-                if (i==spalten-1 && tempMatrix[z][i] == 0){      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
-                    aNullZeilen++;                             //Protokolierung der Nullzeilen
-                    for(int zv=z; zv<zeilen-1; zv++){        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
-                        for(int sv = 0; sv<spalten;sv++){    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
-                            tempMatrix[zv][sv]=tempMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
-                        }
-                    }
-                    for(int nz = 0; nz<spalten;nz++){
-                        tempMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
-                    }
-                }
+            else if (i==spalten-1 && tempMatrix[z][i] == 0){      //Wenn in letzter Spalte der Zeile 0 und noch kein Break erfolgt -> Alle Einträge der Zeile gleich 0
+                aNullZeilen++;                             //Protokolierung der Nullzeilen
+                for(int zv=z; zv<zeilen-1; zv++)        //Schleife zur Verschiebung der Elemente, hier Veränderung der Zeile
+                    for(int sv = 0; sv<spalten;sv++)    //Schleife zur Verschiebung der Elementem hier Veränderung der Spalte
+                        tempMatrix[zv][sv]=tempMatrix[zv+1][sv]; //Elemte aus Zusammensetzung [Zeile][Spalte] überschreiben Nullzeile
+                for(int nz = 0; nz<spalten;nz++)
+                    tempMatrix[zeilen-1][nz] = 0;           //Überschriebene Nullzeilen werden an Matrix unten wieder angehängt
             }
-        }
-    }
-
 //tatsächliche matrix + vektor
     aNullZeilen /= 2;
-
     for(int vz = 0; vz<zeilen-aNullZeilen; vz++)
         b -> data[vz] = tempMatrix[vz][spalten-1];    //Vektor = tempMatrix-Matrix
     for(int mz=0; mz<zeilen-aNullZeilen; mz++)
         for(int ms=0; ms<spalten-1; ms++)
             A -> data[mz][ms]=tempMatrix[mz][ms];     //Quadratische Matrix = tempMatrix -Vektor
-
     printf("Nullzeilen:\t%d\n\n\n", aNullZeilen);
     fclose(fp);
     return true;
 }
 
-int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
-
-    int zeilen = A -> n, spalten = A -> n + 1, aNullZeilen=0;
-    double vorher[zeilen], nachher[zeilen], minDiff = 0, diff = 0;
-    long double xneu[zeilen-aNullZeilen], xstart[zeilen-aNullZeilen];
+void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
+    int zeilen = A -> n, aNullZeilen=0;
+    double minDiff = 0, xneu[zeilen-aNullZeilen], xstart[zeilen-aNullZeilen];
     int schritt = 0, maxSchritte = 100;
-
     if(method == JACOBI){
         do{
             for(int i = 0; i < zeilen-aNullZeilen; i++)
@@ -201,22 +172,16 @@ int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
             }
             for(int i = 0; i < zeilen-aNullZeilen; i++){
                 double diff = xstart[i] - xneu[i];
-                if(diff < 0) diff = diff * (-1);        // differenz zwischen vorher nachher
+                if(diff < 0) diff = diff * (-1);
                 if(diff < minDiff || schritt == 0) minDiff = diff;
                 xstart[i] = xneu[i];
+                x -> data[i] = xneu[i];
             }
             schritt++;
         }while(minDiff > e && schritt < maxSchritte);
-
-        for (int i = 0; i<zeilen-aNullZeilen; i++)
-            printf("x%d = %.10Lf\n", i, xneu[i]); //Ausgabe
-        printf("Schritte: %d\n\n",schritt);
-
     }
     else if(method == GAUSS_SEIDEL){
-       double normNeu;
-       double normAlt;
-
+        double normNeu, normAlt;
         do{
             /* Normwerte := 0 damit Differenz bei jedem
              * neuen Schritt neu berechnet werden kann:*/
@@ -239,54 +204,56 @@ int solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
             }
             for (int i = 0; i < zeilen-aNullZeilen; i++){
                 double diff = xstart[i] - xneu[i];
-                if(diff < 0) diff = diff * (-1);        // differenz zwischen vorher nachher
+                if(diff < 0) diff = diff * (-1);
                 if(diff < minDiff || schritt == 0) minDiff = diff;
                 xstart[i] = xneu[i];
+                x -> data[i] = xneu[i];
             }
             schritt++;
             }while(minDiff > e && schritt < maxSchritte);
-        for(int p = 0; p < zeilen - aNullZeilen; p++)
-            printf("x%d = %.10Lf\n",p, xneu[p]);
-        printf("schritte: %d\n\n",schritt);
     }
+    printf("Nach %d Schritten:\n\n",schritt);
+}
+
+int main() {
+    Matrix A;
+    Vector b;
+    Vector x;
+    double e;
+    Method m;
+    //Titel
+    printf("\t ----------------------------\n\t|                            |\n\t|   LGS - Lösungsverfahren   |\n\t|    Jacobi / Gauß-Seidel    |\n\t|                            |\n\t ----------------------------\n\n");
+    bool gueltig;
+    do{
+        char filename[200] = "testdateien/";
+        char file[100];
+        printf("Dateipfad der .csv-Datei: %s", filename);
+        scanf("%s",file);
+        strcat(filename, file);
+        gueltig = load(filename, &A, &b, &x);
+        if(gueltig){
+            printf("Datei erfolgreich geladen.\n\n");
+            char auswahl;
+            do{
+                printf("Welches Verfahren?\nSchreibe '0' für Jacobi oder '1' für Gauß-Seidel: ");
+                scanf("%s",&auswahl);
+                if(auswahl == '0') m = JACOBI;
+                else if(auswahl == '1') m = GAUSS_SEIDEL;
+                else printf(" - Ungültige Eingabe -\n\n");
+            } while(auswahl != '0' && auswahl != '1');
+            printf("\nWie klein soll die Fehlerschranke sein? (Bsp. 10⁻¹⁰ = 1e-10): ");
+            scanf("%lf",&e);
+            printf("\n");
+            solve(m, &A, &b, &x, e);
+            for (int i = 0; i < x.n;i++)
+                printf("\tx%d = %f\n", i+1, x.data[i]);
+            break;
+        }
+        else printf("Die Datei konnte nicht geladen werden.\n\n\n");
+    } while(!gueltig);
     return 0;
 }
 
-int countEintraege(){
-    FILE *fp;
-    fp = fopen("testdateien/konv3.csv", "r");
-
-    int i = 0;
-    char c;
-    bool prevcharbreak = false;
-    fseek(fp, 0, SEEK_SET);                 //Dateizeiger auf Anfang setzen
-
-    while((c=fgetc(fp)) != EOF) {             //while Dateiende nicht erreicht
-       char temp = c;                               //temp = momentanes Zeichen
-       if ((c == '\n' && prevcharbreak==false)|| c == ',') {    //if c = Zeilenumbruch oder Komma
-           i++;
-       }
-       if (c=='\r') {                          //if c = Zeilenumbruch oder Komma
-           i++;
-           prevcharbreak = true;               //daduch wird im Falle von Windows und co. \r\n umgangen, sodass die Einträge nicht doppelt gezählt werden
-       }
-     }
-
-     fclose(fp);
-     return i;
-
-}
-int getZeilen(int eintraege){
-    int zeilen = 0;
-    if (eintraege > 0){
-        for (int i = 0; i<1000; i++)
-            if(eintraege == zeilen*(zeilen+1))
-                break;
-            else zeilen++;
-        return zeilen;
-    }
-    else return 0;
-}
 
 
 
