@@ -165,30 +165,34 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
 }
 
 void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
-    int zeilen = A -> n, aNullZeilen = 0, schritt = 0, maxSchritte = 100;
+    int schritt = 0, maxSchritte = 100;
     Vector xAlt;
-    xAlt.n = zeilen;
-    xAlt.data = (double*)malloc(sizeof(double*) * zeilen);
-    double minDiff = 0;
+    xAlt.n = x -> n;
+    xAlt.data = (double*)malloc(sizeof(double*) * x -> n);
+    double diff = 0;
 
     if(method == JACOBI){
-        do{
-            for(int i = 0; i < zeilen - aNullZeilen; i++)
+        do{// solange bis zum letzten wert kleiner oder gleich Fehlerschranke ist
+            //Algorithmus - (Quelle: Pseudocode auf Wikipedia)
+            for(int i = 0; i < x -> n; i++){
                 x -> data[i] = b -> data[i];
-            for(int i = 0;i<zeilen - aNullZeilen; i++){
-                for(int j = 0;j < zeilen-aNullZeilen; j++)
+                for(int j = 0; j < x -> n; j++)
                     if(i != j)
                          x -> data[i] = x -> data[i] - A -> data[i][j] * xAlt.data[j];
                 x -> data[i] = x -> data[i] / A -> data[i][i];
             }
-            for(int i = 0; i < zeilen - aNullZeilen; i++){
-                double diff = xAlt.data[i] - x -> data[i];
-                if(diff < 0) diff = diff * (-1);
-                if(diff < minDiff || schritt == 0) minDiff = diff;
+
+            //Überprüfung ob Differenz kleiner als die Fehlerschranke ist
+            for(int i = 0; i < x -> n; i++){
+                //Berechnung der kleinsten Differenz zwischen x und xAlt
+                diff = xAlt.data[i] - x -> data[i];
+                if(diff < 0) diff = diff * (-1); //Betrag der Differenz
+                //Wenn die Differenz von einem der Werte des Vektors x kleiner oder gleich zur Fehlerschrankeist, kann aufgehört werden
+                if(diff <= e) break;
                 xAlt.data[i] = x -> data[i];
             }
             schritt++;
-        }while(minDiff > e && schritt < maxSchritte);
+        }while(diff > e && schritt < maxSchritte);
     }
     else if(method == GAUSS_SEIDEL){
         //Normwerte := 0 damit Differenz bei jedem neuen Schritt neu berechnet werden kann:
@@ -197,28 +201,31 @@ void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
             normNeu = 0;
             normAlt = 0;
                 //Zeilenschleife:
-                for (int i = 0; i < zeilen - aNullZeilen; i++){
+                for (int i = 0; i < x -> n; i++){
                     x -> data[i] = 0;
                     //Spaltenschleifen:
                     for (int j = 0; j < i; j++)
                         x -> data[i] = x -> data[i] + (A->data[i][j] * x -> data[j]);
-                    for (int j = i + 1; j < zeilen-aNullZeilen; j++)
+                    for (int j = i + 1; j < x -> n; j++)
                         x -> data[i] = x -> data[i] + (A->data[i][j] * xAlt.data[j]);
                     x -> data[i] = (b->data[i] - x -> data[i]) / A->data[i][i];
                 }
             //Berechnung NormNeu&NormAlt:
-            for (int i = 0; i < zeilen - aNullZeilen; i++){
+            for (int i = 0; i < x -> n; i++){
                 normNeu += abs(x -> data[i] * x -> data[i]);
                 normAlt += abs(xAlt.data[i] * xAlt.data[i]);
             }
-            for (int i = 0; i < zeilen-aNullZeilen; i++){
-                double diff = xAlt.data[i] - x -> data[i];
-                if(diff < 0) diff *= (-1);
-                if(diff < minDiff || schritt == 0) minDiff = diff;
+            //Überprüfung ob Differenz kleiner als die Fehlerschranke ist
+            for(int i = 0; i < x -> n; i++){
+                //Berechnung der kleinsten Differenz zwischen x und xAlt
+                diff = xAlt.data[i] - x -> data[i];
+                if(diff < 0) diff = diff * (-1); //Betrag der Differenz
+                //Wenn die Differenz von einem der Werte des Vektors x kleiner oder gleich zur Fehlerschrankeist, kann aufgehört werden
+                if(diff <= e) break;
                 xAlt.data[i] = x -> data[i];
             }
             schritt++;
-            }while(minDiff > e && schritt < maxSchritte);
+            }while(diff > e && schritt < maxSchritte);
     }
     printf("Nach %d Schritten:\n\n",schritt);
 }
