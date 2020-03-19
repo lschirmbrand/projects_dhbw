@@ -95,7 +95,7 @@ int load (const char *filename, Matrix *A, Vector *b, Vector *x){
     //ermitteln wie viele zeilen und spalten
     int zeilen = getZeilen(eintraege), spalten = zeilen+1;
     printf("Zeilen:\t\t%d\nSpalten:\t%d\n", zeilen, spalten);
-
+    //parsen der Werte aus der .csv-Datei
     char numberstring[30]; // numberstring, CharArray dem "temp" immer wieder hinzugefügt wird, gibt Zahl einer Zelle im Stringformat aus, Array = (gebrauchte Größe + 1), weil terminierende 0
     long double number = 0; // number, hat Wert der einzelnen Zellen der Matrix
     char temp = 0; //temp: Je nachdem was "char c" einliest, wird temp dessen Wert zugewiesen
@@ -196,7 +196,6 @@ void solve (Method method, Matrix *A, Vector *b, Vector *x, double e){
             }
             schritt++;
         } while(diff > e && schritt < maxSchritte);
-
     else if(method == GAUSS_SEIDEL)
         do{// solange bis zum letzten wert kleiner oder gleich Fehlerschranke ist
             //Algorithmus - (siehe Pseudocode auf Wikipedia)
@@ -260,8 +259,8 @@ int main() {
             printf("\nNoch eine Datei einlesen? [y/n]: ");
         }
         else printf("Die Datei konnte nicht geladen werden.\n\nNochmal versuchen? [y/n]: ");
-
         scanf("%s", &nochmal);
+        //nuter wird solange gefragt bis er y für Ja oder n für nein eingibt
         while(nochmal != 'y' && nochmal != 'n'){
             printf(" - Ungültige Eingabe -\n\nNochmal versuchen? [y/n]: ");
             scanf("%s", &nochmal);
