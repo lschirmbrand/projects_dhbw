@@ -230,14 +230,14 @@ int main() {
     Method m;
     //Titel
     printf("\t ----------------------------\n\t|                            |\n\t|   LGS - Lösungsverfahren   |\n\t|    Jacobi / Gauß-Seidel    |\n\t|                            |\n\t ----------------------------\n\n");
-    bool gueltig;
+    char nochmal;
     do{
         //Fragt Anwender nach .csv-Datei
         char filename[100];
         printf("Dateipfad der .csv-Datei: ");
         scanf("%s",filename);
         //wenn Datei ungültig, wird do-while-Schleife wieder wiederholt
-        gueltig = load(filename, &A, &b, &x);
+        bool gueltig = load(filename, &A, &b, &x);
         if(gueltig){
             printf("Datei erfolgreich geladen.\n\n");
             char auswahl;
@@ -257,10 +257,16 @@ int main() {
             //Ausgabe des Vektors x
             for (int i = 0; i < x.n;i++)
                 printf("\tx%d = %f\n", i+1, x.data[i]);
-            break;
+            printf("\nNoch eine Datei einlesen? [y/n]: ");
         }
-        else printf("Die Datei konnte nicht geladen werden.\n\n\n");
-    } while(!gueltig);
+        else printf("Die Datei konnte nicht geladen werden.\n\nNochmal versuchen? [y/n]: ");
+
+        scanf("%s", &nochmal);
+        while(nochmal != 'y' && nochmal != 'n'){
+            printf(" - Ungültige Eingabe -\n\nNochmal versuchen? [y/n]: ");
+            scanf("%s", &nochmal);
+        }
+    } while(nochmal == 'y');
     return 0;
 }
 
