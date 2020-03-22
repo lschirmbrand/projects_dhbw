@@ -1,35 +1,13 @@
 /*
-Programm öffnet die CSV-Datei, im Falle eines Fehlschlags wird ein NULL-Pointer zurück gegeben, in diesem Fall wird eine Fehlermeldung ausgegeben.
-Im Falle eines erfolgreichen Öffnens wird der Filestream aktiviert: Zuerst wird der Zeiger in der Datei auf den Anfang gesetzt, sodass er immer am Anfang ist.
-Danach wird ein char c genutzt, um Char für Char den Filestream zu überprüfen.
-Falls der Char ein Komma oder 13/10/1310 einliest, wird ein Eintrag hinzugefügt, beziehungsweise die Einträge um 1 erhöht.
-Im nachfolgenden Schritt werden die Ausmaße der Gesamtmatrix erfasst.
-Die Gesamtmatrix setzt sich aus einer quadratischen Matrix und einem Vektor b, der neben der quadratischen Matrix steht, zusammen.
-Um das Verhältnis der Matrix auszurechnen, machen wir uns genau diese Information zu Nutzen, es resultiert:
-Einträge = Zeilen*(Zeilen+1) = Zeilen * Spalten,
 
+    Am Projekt beteiligt waren:
+        
+        Name:                   Matrikelnummer:
+        Denis Bauer             2832690
+        Fabian Lohmüller        9514094
+        Luca Schirmbrand        4775194
 
-
-Folgend wird ein CharArray initialisiert, das einen String speichern soll.
-Zusätzlich wird ein tempchar initialisiert der das gelesene Element temporär speichert.
-Bei jeder Zeigerbewegung wird der String um temp erweitert, temp variiert und ist mal das Zeichen, mal die Terminierung des Strings, also das Stringende.
-Wenn der numberstring voll ist, bzw endet, weil er terminiert wird, wird der string zu double konvertiert und number zugeschrieben.
-
-// kurz gesagt, die csv datei wird geparst
-
-
-Direkt darauf wird der Wert einer Zelle der tempMatrix zugewiesen, danach wird der Index des Arrays/der Matrix verschoben, in den dann wieder die neue number abgespeichert wird.
-Im Falle eines Zeilenumbruchs wird der Index des Array in der Zeile um 1 erhöht und in der Spalte auf 0 gesetzt.
-Dadurch wird das gesamte Array richtig abgespeichert, mit allen aus der csv-Datei übergeben Werten.
-Im nächsten Schritt sollen alle Nullzeilen ignoriert werden, das heißt wir schieben sie an das Zeilenende des Arrays und ignorieren sie später bei der Übergabe an die
-richtige Matrix und den Vektor, beziehungsweise passen die Arraygröße auf Zeilen-Nullzeilen an.
-Danach wird die (neue&richtige) Matrix mit allen Werten der tempMatrix von 0<=x<Spalten-1 besetzt für alle Zeilen abzüglich der Nullzeilen.
-Der Vektor wird aus allen Werten der Spalte in Reihenfolge der Zeilen, wieder ohne Nullzeilen, deklariert.
 */
-
-//
-//  Vorwort muss evtl noch überarbeitet werden
-//
 
 #include <stdio.h>
 #include <stdbool.h>
